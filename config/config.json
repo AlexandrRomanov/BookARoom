@@ -1,0 +1,18 @@
+{
+  "$schema": "https://dev.office.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "book-a-room-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/bookARoom/BookARoomWebPart.js",
+          "manifest": "./src/webparts/bookARoom/BookARoomWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "BookARoomWebPartStrings": "lib/webparts/bookARoom/loc/{locale}.js"
+  }
+}
