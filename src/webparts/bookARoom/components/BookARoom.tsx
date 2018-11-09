@@ -42,11 +42,13 @@ export default class BookARoom extends React.Component<IUpcomingMeetingsProps, I
       
     }
     else{
+      let _url ='https://dcgovict.sharepoint.com/sites/dhcf/it/SitePages/Book-a-Room.aspx';
+      //let _url ='https://dcgovict.sharepoint.com/sites/dhcf/it/_layouts/15/workbench.aspx';
       let url = `https://login.windows.net/dc.gov/oauth2/v2.0/authorize?
                   response_type=token&
                   client_id=${encodeURI('3accf488-95f1-488e-bf1b-6c08a6af457d')}&
                   scope=${encodeURI('user.read user.readbasic.all calendars.read calendars.read.shared calendars.ReadWrite.shared calendars.readwrite')}&
-                  redirect_uri=${encodeURI('https://dcgovict.sharepoint.com/sites/dhcf/it/_layouts/15/workbench.aspx')}`
+                  redirect_uri=${encodeURI(_url)}`
     
       window.location.replace(url);
   }
