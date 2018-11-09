@@ -23,6 +23,7 @@
     "react-autosuggest": "^9.3.2",
     "react-beautiful-dnd": "^3.0.0",
     "react-dom": "15.6.2",
+    "react-table": "^6.8.6",
     "slugify": "^1.2.7",
     "sp-pnp-js": "^3.0.3"
   },

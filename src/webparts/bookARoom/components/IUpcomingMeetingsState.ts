@@ -4,10 +4,8 @@ import { IRoomItem } from './IListItem';
 export interface IUpcomingMeetingsState {
   loading: boolean;
   error: string;
-  upcomingMeetings: IMeeting[];
-  signedIn: boolean;
   rooms:IRoomItem[];
-  myMeetings: IMeeting[];
-  newMeetinng:boolean;
+  showNewMeetinng:boolean;
   token:string;
+  meetinng:any;
 }
