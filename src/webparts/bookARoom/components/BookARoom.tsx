@@ -12,6 +12,7 @@ import { IRoomItem } from './IListItem';
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { Calendar } from './Calendar';
 import { EditMeeting } from './EditMeetinng';
+import { TokenHandler } from './TokenHandler';
 
 export default class BookARoom extends React.Component<IUpcomingMeetingsProps, IUpcomingMeetingsState> {
  // private authCtx: adal.AuthenticationContext;
@@ -24,38 +25,13 @@ export default class BookARoom extends React.Component<IUpcomingMeetingsProps, I
       error: null,
       rooms:[],
       showNewMeetinng:false,
-      token:'',
-      meetinng:{}
+      meetinng:{},
+      token:null,
     };
-  }
-  
-  
-  public componentDidMount(): void {
-    if (window !== window.top) {
-      return;
-    }
-    if(window.location.href.split("#access_token=").length>1){
-      this.setState((prevState: IUpcomingMeetingsState, props: IUpcomingMeetingsProps): IUpcomingMeetingsState => {
-        prevState.token = window.location.href.split("#access_token=")[1].split("&")[0];
-        return prevState;
-      });
-      
-    }
-    else{
-      let _url ='https://dcgovict.sharepoint.com/sites/dhcf/it/SitePages/Book-a-Room.aspx';
-      //let _url ='https://dcgovict.sharepoint.com/sites/dhcf/it/_layouts/15/workbench.aspx';
-      let url = `https://login.windows.net/dc.gov/oauth2/v2.0/authorize?
-                  response_type=token&
-                  client_id=${encodeURI('3accf488-95f1-488e-bf1b-6c08a6af457d')}&
-                  scope=${encodeURI('user.read user.readbasic.all calendars.read calendars.read.shared calendars.ReadWrite.shared calendars.readwrite')}&
-                  redirect_uri=${encodeURI(_url)}`
-    
-      window.location.replace(url);
-  }
   }
 
   public componentDidUpdate(prevProps: IUpcomingMeetingsProps, prevState: IUpcomingMeetingsState, prevContext: any): void {
-    if (prevState.token !== this.state.token && !!this.state.token) {
+    if (!prevState.token && !!this.state.token) {
       this.loadCalendar();
     }
   }
@@ -66,6 +42,14 @@ export default class BookARoom extends React.Component<IUpcomingMeetingsProps, I
     
     return (
       <div className={styles.upcomingMeetings}>
+      <TokenHandler 
+        onChangeToken = {(token)=>{
+          this.setState((prevState: IUpcomingMeetingsState): IUpcomingMeetingsState => {
+            prevState.token = token;
+            return prevState;
+          });
+        }}
+      />
         <DefaultButton 
           text="Add Meeting" 
           hidden={ !this.state.rooms.length } 

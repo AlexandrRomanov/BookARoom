@@ -1,0 +1,44 @@
+.fix {
+
+    input[type=password], input[type=text], input[type=file], input:not([type]), select, textarea{
+        border-color: transparent;
+    }
+
+    input[type=button], input[type=reset], input[type=submit], button {
+        min-width: 0;
+        margin-left: 0;
+    }
+
+    input[type=button], input[type=reset], input[type=submit], button,
+    input[type=button]:hover, input[type=reset]:hover, input[type=submit]:hover, button:hover{
+        border-color: transparent;
+    }
+    
+    :global{
+        .ms-Button .ms-Icon{
+            // font-size: 15px !important;
+        }
+        button.ms-Toggle-background{
+            border: 1px solid;
+        }
+    }
+}
+
+body {
+    @extend .fix;
+}
+
+:global {
+    div.ms-webpart-zone {
+        display: block;
+    }
+    
+    div.ms-webpart-cell-vertical-inline-table {
+        display: block;
+    }
+    
+    div.ms-webpart-chrome-vertical {
+        display: block;
+    }
+
+}

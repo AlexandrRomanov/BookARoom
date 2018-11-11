@@ -1,0 +1,7 @@
+.invalid{
+    :global{
+        .ms-Dropdown-title{
+            border-color: "[theme: errorText, default: #a80000]";
+        }
+    }
+}

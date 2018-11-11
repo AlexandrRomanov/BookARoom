@@ -26,6 +26,6 @@ gulp bundle - TODO
 gulp package-solution - TODO
 
 
-gulp build
-gulp bundle --ship
-gulp package-solution --ship
+* gulp build
+* gulp bundle --ship
+* gulp package-solution --ship

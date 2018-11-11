@@ -9,3 +9,13 @@ export interface IUpcomingMeetingsState {
   token:string;
   meetinng:any;
 }
+
+export interface IEditMeetingsState {
+  meeting:any;
+}
+export interface ITokenHandlerState {
+  expiresTokenDate:Date;
+  expires_in:number;
+  token:string;
+  onChangeToken: (token:string) => void;
+}

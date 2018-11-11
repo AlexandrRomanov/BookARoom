@@ -3,13 +3,22 @@ import { IEditMeetingProps } from './IListItemProps';
 import { Dialog, DialogType, DialogFooter } from 'office-ui-fabric-react/lib/Dialog';
 import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { PrimaryButton, DefaultButton } from 'office-ui-fabric-react/lib/Button';
+import { ValidatorForm, TextFieldValidator, DatePickerValidator } from '../../../controls/validator';
+import { DayOfWeek } from 'office-ui-fabric-react/lib/Calendar';
+import { IEditMeetingsState } from './IUpcomingMeetingsState';
+import TimePicker from './TimePicker';
 
-export class EditMeeting extends React.Component<IEditMeetingProps, {}> {
-  meeting:any = {}
+export class EditMeeting extends React.Component<IEditMeetingProps, IEditMeetingsState> {
+  constructor(props: IEditMeetingProps, context?: any) {
+    super(props);
+
+    this.state = {
+      meeting:!!this.props.meeting ? this.props.meeting:{},
+    };
+  }
   save;
   public render(): JSX.Element {
     const hidden: boolean = this.props.hidden;
-    this.meeting = this.props.meeting;
     const onClose = this.props.onClose;
     this.save  = this.props.onSave;
     return (
@@ -27,32 +36,70 @@ export class EditMeeting extends React.Component<IEditMeetingProps, {}> {
           containerClassName: 'ms-dialogMainOverride'
         }}
       >
-       <div>
-         <TextField
-          name='test'
-          value={ this.meeting.test }
-          onChanged={ this.handleChangeTitle }
-         />
-           
-         </div>
+      <ValidatorForm onSubmit={this._saveDialog} >
+                        <TextFieldValidator
+                            id="Title"
+                            name='Title'
+                            label="Title"
+                            maxLength={ 80 }
+                            value={this.state.meeting.test}
+                            onChanged={ this.handleChangeTitle('test') }
+                            validators={['required']}
+                            errorMessages={['this field is required']}
+                        />
+                        <div className="ms-Grid-row">
+                            <div className="ms-Grid-col ms-sm7">
+                            <DatePickerValidator
+                                    label="Start Date"
+                                    name="StartDate"
+                                    isRequired={ false }
+                                    allowTextInput={ true }
+                                    firstDayOfWeek={ DayOfWeek.Sunday }
+                                    value={this.state.meeting.EventDate}
+                                    isMonthPickerVisible={false} 
+                                    onSelectDate={(newDate) =>
+                                      this.setState(prevState => {
+                                        prevState.meeting.EventDate = newDate;
+                                      }
+                                  )} 
+                                    validators={['required']}
+                                    errorMessages={['this field is required']}                           
+                                />
+                            </div>
+                            <div className="ms-Grid-col ms-sm5">
+                                {/*true ? 
+                                    <TimePicker 
+                                        label="Start Time"
+                                        date={this.state.meeting.EventDate} 
+                                        onChanged={(date)=>{this.setState(prevState => prevState.meeting.EventDate = date);}}>
+                                </TimePicker> : null*/}
+                            </div>
+                        </div>
+                        
         <DialogFooter>
-          <PrimaryButton onClick={this._saveDialog} text="Save" />
+          <PrimaryButton type="submit"   text="Save" />
           <DefaultButton onClick={ onClose } text="Cancel" />
         </DialogFooter>
+        </ValidatorForm>
       </Dialog>)
     );
   }
-  private handleChangeTitle = value => {
+  private handleChangeTitle = name => value => {
     //var slugify = require('slugify');
-      this.setState(()=>
-       this.meeting["test"] = value// slugify(value, {remove: /[^a-zA-Z0-9\-\. ]/g})
+      this.setState((prevState)=>
+      prevState.meeting[name] = value// slugify(value, {remove: /[^a-zA-Z0-9\-\. ]/g})
       );
     }
-  
+    private handleDate = (meeting:any, name:string)  => value => {
+      /*
+        this.setState(()=>
+         meeting[name] = value
+        );*/
+      }
   private _saveDialog = (): void => {
     debugger;
     let event:any={
-      "subject": this.meeting.test,
+      "subject": this.state.meeting.test,
       "body": {
         "contentType": "HTML",
         "content": "<div>test</div>"

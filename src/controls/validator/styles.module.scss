@@ -1,0 +1,21 @@
+.removeDefaultError{
+    :global{
+        .ms-TextField-errorMessage:not(.custom){
+            display: none;
+        }
+    }
+}
+
+.errorMessage{
+    font-size:12px;
+    font-weight:400;
+    color:"[theme: errorText, default: #a80000]";
+    margin:0;
+    padding-top:5px;
+    display:-webkit-box;
+    display:-ms-flexbox;
+    display:flex;
+    -webkit-box-align:center;
+    -ms-flex-align:center;
+    align-items:center
+}

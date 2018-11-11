@@ -1,7 +1,7 @@
 {
   "@microsoft/generator-sharepoint": {
     "version": "1.4.0",
-    "libraryName": "tiles",
+    "libraryName": "BookARoom",
     "libraryId": "ce0d04a5-1810-4378-9428-2d81a432e63e",
     "environment": "spo",
     "isCreatingSolution": false,

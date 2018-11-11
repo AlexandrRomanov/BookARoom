@@ -23,3 +23,6 @@ export interface IEditMeetingProps {
   onClose: () => void;
   onSave: (meeting:any) => void;
 }
+export interface ITokenHandlerProps {
+  onChangeToken: (token:string) => void;
+}
