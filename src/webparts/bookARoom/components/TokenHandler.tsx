@@ -93,7 +93,7 @@ export class TokenHandler extends React.Component<ITokenHandlerProps, ITokenHand
         prevState.expires_in = expires_in;
         return prevState;
     });
-    that.state.onChangeToken(token)
+    that.state.onChangeToken(token);
   }
 
   writeToLocalStorage(cname: string, value: any) {
