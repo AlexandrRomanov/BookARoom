@@ -13,7 +13,7 @@ export class TokenHandler extends React.Component<ITokenHandlerProps, ITokenHand
         target:'_blank',
         default_expires_in:3600000, //default value 60 minutes
         expires_in:'expires_in='
-    }
+    };
   constructor(props: ITokenHandlerProps, context?: any) {
     super(props);
 
@@ -55,7 +55,7 @@ export class TokenHandler extends React.Component<ITokenHandlerProps, ITokenHand
       }
       else{
         let url = `${that.config.login_start_url}&client_id=${encodeURI(that.config.client_id)}&
-                    scope=${encodeURI(that.config.scope)}&redirect_uri=${encodeURI(window.location.href)}`
+                    scope=${encodeURI(that.config.scope)}&redirect_uri=${encodeURI(window.location.href)}`;
         let popUp = window.open(url, that.config.target);
         let interval = setInterval(function() {   
           if(!!popUp.location.href && popUp.location.href.indexOf(that.config.access_token)>-1){
@@ -70,7 +70,7 @@ export class TokenHandler extends React.Component<ITokenHandlerProps, ITokenHand
               token:token,
               expiresTokenDate:expiresTokenDate,
               expires_in:expires_in
-            }
+            };
             that.writeToLocalStorage(that.config.LocalStorage, storageValue);
             that.setToken(that, token, expiresTokenDate, expires_in);
             popUp.close();

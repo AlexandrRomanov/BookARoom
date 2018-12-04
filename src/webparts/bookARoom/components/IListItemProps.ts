@@ -13,13 +13,16 @@ export interface IRoomItemProps {
 
 export interface IMeetingItemProps {
   item: IMeeting;
+  editItem: (meeting:any) => void;
 }
 export interface ICalendarProps {
   rooms: IRoomItem[];
+  editItem: (meeting:any) => void;
 }
 export interface IEditMeetingProps {
   hidden:boolean;
   meeting:any;
+  lokations:any[],
   onClose: () => void;
   onSave: (meeting:any) => void;
 }

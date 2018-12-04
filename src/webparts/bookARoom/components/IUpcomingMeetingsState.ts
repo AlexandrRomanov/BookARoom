@@ -8,6 +8,7 @@ export interface IUpcomingMeetingsState {
   showNewMeetinng:boolean;
   token:string;
   meetinng:any;
+  lokations:any[];
 }
 
 export interface IEditMeetingsState {

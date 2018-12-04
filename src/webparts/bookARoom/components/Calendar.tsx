@@ -10,36 +10,37 @@ export class Calendar extends React.Component<ICalendarProps, {}> {
     const rooms: IRoomItem[] = this.props.rooms;
     const columns = [{
       Header: '',
-      accessor: 'name' 
+      accessor: 'name',
+       
     }, {
       Header: 'Monday',
       accessor: 'day1',
       Cell: props => !props.value? null : props.value.map((item: IMeeting): JSX.Element => {
-        return <CalendarEvent item={item} />;
+        return <CalendarEvent item={item} editItem={(item)=>{ this.props.editItem(item); }} />;
       })
     }, {
       Header: 'Tuesday',
       accessor: 'day2',
       Cell: props => !props.value? null : props.value.map((item: IMeeting): JSX.Element => {
-        return <CalendarEvent item={item} />;
+        return <CalendarEvent item={item} editItem={(item)=>{ this.props.editItem(item); }} />;
       })
     }, {
       Header: 'Wednesday',
       accessor: 'day3',
       Cell: props => !props.value? null : props.value.map((item: IMeeting): JSX.Element => {
-        return <CalendarEvent item={item} />;
+        return <CalendarEvent item={item} editItem={(item)=>{ this.props.editItem(item); }} />;
       })
     }, {
       Header: 'Thusday',
       acceaccessor: 'day4',
       Cell: props => !props.value? null : props.value.map((item: IMeeting): JSX.Element => {
-        return <CalendarEvent item={item} />;
+        return <CalendarEvent item={item} editItem={(item)=>{ this.props.editItem(item); }} />;
       })
     }, {
       Header: 'Friday',
       accessor: 'day5',
       Cell: props => !props.value? null : props.value.map((item: IMeeting): JSX.Element => {
-        return <CalendarEvent item={item} />;
+        return <CalendarEvent item={item} editItem={(item)=>{ this.props.editItem(item); }}  />;
       })
     }
     ]

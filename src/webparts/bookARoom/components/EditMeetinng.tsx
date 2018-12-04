@@ -7,14 +7,20 @@ import { ValidatorForm, TextFieldValidator, DatePickerValidator } from '../../..
 import { DayOfWeek } from 'office-ui-fabric-react/lib/Calendar';
 import { IEditMeetingsState } from './IUpcomingMeetingsState';
 import TimePicker from './TimePicker';
+import { Dropdown } from 'office-ui-fabric-react';
 
 export class EditMeeting extends React.Component<IEditMeetingProps, IEditMeetingsState> {
   constructor(props: IEditMeetingProps, context?: any) {
     super(props);
-
     this.state = {
       meeting:!!this.props.meeting ? this.props.meeting:{},
     };
+  }
+  componentWillReceiveProps(nextProps) {
+    // You don't have to do this check first, but it can help prevent an unneeded render
+    if (nextProps.meeting.id !== this.state.meeting.id) {
+      this.setState({ meeting: nextProps.meeting });
+    }
   }
   save;
   public render(): JSX.Element {
@@ -42,10 +48,19 @@ export class EditMeeting extends React.Component<IEditMeetingProps, IEditMeeting
                             name='Title'
                             label="Title"
                             maxLength={ 80 }
-                            value={this.state.meeting.test}
-                            onChanged={ this.handleChangeTitle('test') }
+                            value={this.state.meeting.Title}
+                            onChanged={ this.handleChangeTitle('Title') }
                             validators={['required']}
                             errorMessages={['this field is required']}
+                        />
+                         <Dropdown
+                            id="Location"
+                            label="Location"
+                            selectedKey={this.state.meeting.Location.key}
+                            onChanged={this.handleChangeTitle('Location')} 
+                            options={ this.props.lokations }       
+                            onRenderTitle={ (item:any) => <span> { item[0].title }</span>}
+                            onRenderOption={this.renderCategory}          
                         />
                         <div className="ms-Grid-row">
                             <div className="ms-Grid-col ms-sm7">
@@ -67,17 +82,52 @@ export class EditMeeting extends React.Component<IEditMeetingProps, IEditMeeting
                                 />
                             </div>
                             <div className="ms-Grid-col ms-sm5">
-                                {/*true ? 
+                                {true ? 
                                     <TimePicker 
                                         label="Start Time"
                                         date={this.state.meeting.EventDate} 
                                         onChanged={(date)=>{this.setState(prevState => prevState.meeting.EventDate = date);}}>
-                                </TimePicker> : null*/}
+                                </TimePicker> : null}
                             </div>
                         </div>
-                        
+                        <div className="ms-Grid-row">
+                            <div className="ms-Grid-col ms-sm7">
+                            <DatePickerValidator
+                                    label="End Date"
+                                    name="EndDate"
+                                    isRequired={ false }
+                                    allowTextInput={ true }
+                                    firstDayOfWeek={ DayOfWeek.Sunday }
+                                    value={this.state.meeting.EndDate}
+                                    isMonthPickerVisible={false} 
+                                    onSelectDate={(newDate) =>
+                                      this.setState(prevState => {
+                                        prevState.meeting.EndDate = newDate;
+                                      }
+                                  )} 
+                                    validators={['required']}
+                                    errorMessages={['this field is required']}                           
+                                />
+                            </div>
+                            <div className="ms-Grid-col ms-sm5">
+                                {true ? 
+                                    <TimePicker 
+                                        label="Start Time"
+                                        date={this.state.meeting.EndDate} 
+                                        onChanged={(date)=>{this.setState(prevState => prevState.meeting.EndDate = date);}}>
+                                </TimePicker> : null}
+                            </div>
+                        </div>
+                        <TextField
+                            id="Description"
+                            label="Description"
+                            multiline
+                            autoAdjustHeight
+                            value={this.state.meeting.Description}
+                            onChanged={this.handleChangeTitle('Description')}
+                        />
         <DialogFooter>
-          <PrimaryButton type="submit"   text="Save" />
+          <PrimaryButton type="submit" text="Save" />
           <DefaultButton onClick={ onClose } text="Cancel" />
         </DialogFooter>
         </ValidatorForm>
@@ -89,6 +139,9 @@ export class EditMeeting extends React.Component<IEditMeetingProps, IEditMeeting
       this.setState((prevState)=>
       prevState.meeting[name] = value// slugify(value, {remove: /[^a-zA-Z0-9\-\. ]/g})
       );
+    }
+    public renderCategory =(category) => {
+      return category.title;
     }
     private handleDate = (meeting:any, name:string)  => value => {
       /*

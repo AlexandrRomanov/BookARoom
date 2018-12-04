@@ -1,6 +1,7 @@
 import * as React from 'react';
 import 'react-table/react-table.css'
-import styles from './UpcomingMeetings.module.scss';
+import  './CalendarStyle.css';
+import styles from './BookARoom.module.scss';
 import { IUpcomingMeetingsProps } from './IUpcomingMeetingsProps';
 import { IUpcomingMeetingsState } from './IUpcomingMeetingsState';
 import { ICalendarMeeting } from './ICalendarMeeting';
@@ -24,8 +25,13 @@ export default class BookARoom extends React.Component<IUpcomingMeetingsProps, I
       loading: false,
       error: null,
       rooms:[],
+      lokations:[],
       showNewMeetinng:false,
-      meetinng:{},
+      meetinng:{
+        EventDate:new Date(),
+        EndDate:new Date(),
+        Location:{}
+      },
       token:null,
     };
   }
@@ -55,10 +61,30 @@ export default class BookARoom extends React.Component<IUpcomingMeetingsProps, I
           hidden={ !this.state.rooms.length } 
           onClick={ this._openDialog } 
         />
-        <Calendar rooms={this.state.rooms} />
+        <Calendar rooms={this.state.rooms} editItem={(item)=>{
+          console.log(item)
+          this.setState((prevState: IUpcomingMeetingsState, props: IUpcomingMeetingsProps): IUpcomingMeetingsState => {
+            let location = {};
+            prevState.lokations.forEach(element => {
+              if(element.title == item.location)
+                location = element;
+            });
+            prevState.meetinng = {
+              EventDate:item.start,
+              EndDate:item.end,
+              Location:location,
+              Title:item.subject,
+              id:item.id
+            };
+            
+            prevState.showNewMeetinng = true;
+            return prevState;
+          });
+          }}/>
         <EditMeeting
           hidden = { !this.state.showNewMeetinng}
           meeting = { this.state.meetinng }
+          lokations = { this.state.lokations}
           onSave = { this.addNewMeeting }
           onClose = { this._closeDialog }
         />
@@ -80,6 +106,11 @@ export default class BookARoom extends React.Component<IUpcomingMeetingsProps, I
   private _closeDialog = (): void => {
     this.setState((prevState: IUpcomingMeetingsState, props: IUpcomingMeetingsProps): IUpcomingMeetingsState => {
       prevState.showNewMeetinng = false;
+      prevState.meetinng = {
+        EventDate:new Date(),
+        EndDate:new Date(),
+        Location:{}
+      };
       return prevState;
     });
   };
@@ -93,6 +124,13 @@ export default class BookARoom extends React.Component<IUpcomingMeetingsProps, I
         BookARoom.getRooms(this.state.token, this.props.httpClient)
         .then((upcomingMeetings: IRoomItem[]): void => {
           this.setState((prevState: IUpcomingMeetingsState, props: IUpcomingMeetingsProps): IUpcomingMeetingsState => {
+            console.log(upcomingMeetings)
+            let lokations = [];
+            upcomingMeetings.forEach(x=> lokations.push({
+              key: x.address,
+              title: x.name
+            }));
+            prevState.lokations = lokations;
             prevState.rooms = upcomingMeetings;
             prevState.loading = false;
             return prevState;
