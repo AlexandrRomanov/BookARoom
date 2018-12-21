@@ -1,22 +1,18 @@
 import { IMeeting } from './IMeeting';
 import { IRoomItem } from './IListItem';
-
+import * as moment from 'moment';
 export interface IUpcomingMeetingsState {
   loading: boolean;
   error: string;
   rooms:IRoomItem[];
   showNewMeetinng:boolean;
   token:string;
-  meetinng:any;
+  meetinng:IMeeting;
   lokations:any[];
+  date: moment.Moment;
+  currentWeek:string;
 }
 
 export interface IEditMeetingsState {
-  meeting:any;
-}
-export interface ITokenHandlerState {
-  expiresTokenDate:Date;
-  expires_in:number;
-  token:string;
-  onChangeToken: (token:string) => void;
+  meeting:IMeeting;
 }

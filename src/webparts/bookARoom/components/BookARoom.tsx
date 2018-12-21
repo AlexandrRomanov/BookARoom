@@ -4,23 +4,24 @@ import  './CalendarStyle.css';
 import styles from './BookARoom.module.scss';
 import { IUpcomingMeetingsProps } from './IUpcomingMeetingsProps';
 import { IUpcomingMeetingsState } from './IUpcomingMeetingsState';
-import { ICalendarMeeting } from './ICalendarMeeting';
-import { IMeeting } from './IMeeting';
-import { HttpClient, HttpClientResponse } from '@microsoft/sp-http';
 import '../../WebPartAuthenticationContext';
 import * as moment from 'moment';
-import { IRoomItem } from './IListItem';
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { Calendar } from './Calendar';
 import { EditMeeting } from './EditMeetinng';
-import { TokenHandler } from './TokenHandler';
+import { TokenHandler } from '../../../api/TokenHandler/TokenHandler';
+import { EventsApi } from '../../../api/events/api';
+import {IMeeting} from './IMeeting'
+import { WebPartContext } from '@microsoft/sp-webpart-base';
 
 export default class BookARoom extends React.Component<IUpcomingMeetingsProps, IUpcomingMeetingsState> {
- // private authCtx: adal.AuthenticationContext;
-
-  constructor(props: IUpcomingMeetingsProps, context?: any) {
+  eventsApi:EventsApi;
+  _context:WebPartContext
+  constructor(props: IUpcomingMeetingsProps) {
     super(props);
-
+    this.eventsApi = new EventsApi(props.context);
+    this._context = props.context;
+    let date = moment();
     this.state = {
       loading: false,
       error: null,
@@ -28,17 +29,24 @@ export default class BookARoom extends React.Component<IUpcomingMeetingsProps, I
       lokations:[],
       showNewMeetinng:false,
       meetinng:{
-        EventDate:new Date(),
-        EndDate:new Date(),
-        Location:{}
+        start:new Date(),
+        end:new Date(),
+        location:{
+          key:'',
+          title:''
+        },
+        attendees:[]
+        
       },
       token:null,
+      date:date,
+      currentWeek:this.getCurrentWeek(date)
     };
   }
-
+ 
   public componentDidUpdate(prevProps: IUpcomingMeetingsProps, prevState: IUpcomingMeetingsState, prevContext: any): void {
     if (!prevState.token && !!this.state.token) {
-      this.loadCalendar();
+      this.changeDate();
     }
   }
 
@@ -57,26 +65,23 @@ export default class BookARoom extends React.Component<IUpcomingMeetingsProps, I
         }}
       />
         <DefaultButton 
+          text="<" 
+          onClick={ this._PreviousWeek } 
+        />
+        {this.state.currentWeek}
+        <DefaultButton 
+          text=">" 
+          onClick={ this._NextWeek } 
+        />
+        &nbsp;
+        <DefaultButton 
           text="Add Meeting" 
           hidden={ !this.state.rooms.length } 
           onClick={ this._openDialog } 
         />
         <Calendar rooms={this.state.rooms} editItem={(item)=>{
-          console.log(item)
           this.setState((prevState: IUpcomingMeetingsState, props: IUpcomingMeetingsProps): IUpcomingMeetingsState => {
-            let location = {};
-            prevState.lokations.forEach(element => {
-              if(element.title == item.location)
-                location = element;
-            });
-            prevState.meetinng = {
-              EventDate:item.start,
-              EndDate:item.end,
-              Location:location,
-              Title:item.subject,
-              id:item.id
-            };
-            
+            prevState.meetinng = item;
             prevState.showNewMeetinng = true;
             return prevState;
           });
@@ -87,6 +92,7 @@ export default class BookARoom extends React.Component<IUpcomingMeetingsProps, I
           lokations = { this.state.lokations}
           onSave = { this.addNewMeeting }
           onClose = { this._closeDialog }
+          context = {this._context}
         />
         {loading}
         {error}
@@ -94,7 +100,7 @@ export default class BookARoom extends React.Component<IUpcomingMeetingsProps, I
     );
   }
   private addNewMeeting = (meeteng:any): void => {
-    //BookARoom.addEvent(this.state.token, this.props.httpClient, event) tmp
+    this.eventsApi.AddEvent(this.state.token, meeteng);
     this._closeDialog()
   }
   private _openDialog = (): void => {
@@ -107,151 +113,63 @@ export default class BookARoom extends React.Component<IUpcomingMeetingsProps, I
     this.setState((prevState: IUpcomingMeetingsState, props: IUpcomingMeetingsProps): IUpcomingMeetingsState => {
       prevState.showNewMeetinng = false;
       prevState.meetinng = {
-        EventDate:new Date(),
-        EndDate:new Date(),
-        Location:{}
+        start:new Date(),
+        end:new Date(),
+        location:{
+          key:'',
+          title:''
+        },
+        attendees:[]
       };
       return prevState;
     });
   };
   
+private _PreviousWeek = (): void => {
+  this.changeDate(-7);
+}
+
+private _NextWeek = (): void => {
+  debugger
+  this.changeDate(7);
+}
+private changeDate(addDays:number=0){
+  this.setState((previousState: IUpcomingMeetingsState, props: IUpcomingMeetingsProps): IUpcomingMeetingsState => {
+    if(!!addDays)
+      previousState.date = moment(previousState.date, "DD-MM-YYYY").add(addDays, 'days');
+    previousState.currentWeek=this.getCurrentWeek(previousState.date);
+    previousState.loading = true;
+    previousState.lokations = [];
+    previousState.rooms = [];
+    this.loadCalendar(previousState.date);
+    return previousState;
+  });
   
-  private loadCalendar(): void {
-    this.setState((previousState: IUpcomingMeetingsState, props: IUpcomingMeetingsProps): IUpcomingMeetingsState => {
-      previousState.loading = true;
-      return previousState;
-    });
-        BookARoom.getRooms(this.state.token, this.props.httpClient)
-        .then((upcomingMeetings: IRoomItem[]): void => {
-          this.setState((prevState: IUpcomingMeetingsState, props: IUpcomingMeetingsProps): IUpcomingMeetingsState => {
-            console.log(upcomingMeetings)
-            let lokations = [];
-            upcomingMeetings.forEach(x=> lokations.push({
-              key: x.address,
-              title: x.name
-            }));
-            prevState.lokations = lokations;
-            prevState.rooms = upcomingMeetings;
-            prevState.loading = false;
-            return prevState;
-          });
-        }, (error: any): void => {
-          this.setState((prevState: IUpcomingMeetingsState, props: IUpcomingMeetingsProps): IUpcomingMeetingsState => {
-            prevState.loading = false;
-            prevState.error = error;
-            return prevState;
-          });
-        })
+}
+private getCurrentWeek(date:moment.Moment):string{
+  return `${date.startOf('isoWeek').format('MM/DD/YYYY')} - ${moment(date, "DD-MM-YYYY").add(4, 'days').format('MM/DD/YYYY')}`;
+}
+  private loadCalendar(date:moment.Moment): void {
+    this.eventsApi.GetDashboardData(this.state.token, date)
+    .then(({rooms,lokations,MyEvents}): void => {
+      console.log(rooms,lokations,MyEvents)
+      this.setState((prevState: IUpcomingMeetingsState, props: IUpcomingMeetingsProps): IUpcomingMeetingsState => {
+        prevState.lokations = lokations;
+        prevState.rooms = rooms;
+        prevState.loading = false;
+        return prevState;
+      });
+    }, (error: any): void => {
+      this.setState((prevState: IUpcomingMeetingsState, props: IUpcomingMeetingsProps): IUpcomingMeetingsState => {
+        prevState.loading = false;
+        prevState.error = error;
+        return prevState;
+      });
+    })
   }
  
-    private static addEvent(accessToken: string, httpClient: HttpClient, event:any): Promise<IRoomItem[]> {
-    return new Promise<any>((resolve: (roms: any) => void, reject: (error: any) => void): void => {
-      
-      httpClient.post(`https://graph.microsoft.com/v1.0/me/calendar/events`, HttpClient.configurations.v1, {
-        headers: {
-          'Accept': 'application/json;odata.metadata=none',
-          'Authorization': 'Bearer ' + accessToken,
-          'Content-Type':'application/json',
-        },
-        body:JSON.stringify(event)
-      })
-        .then((response: HttpClientResponse): Promise<{ value: any }> => {
-          return response.json();
-        })
-        .then((result: { value: any }): void => {
-          console.log(result)
-        }, (error: any): void => {
-          reject(error);
-        });
-    });
-  }
-  private static getRooms(accessToken: string, httpClient: HttpClient): Promise<IRoomItem[]> {
-
-    const getEvents = file => new Promise((resolve, reject) => {
-      BookARoom.getEvents(accessToken, httpClient, file.address)
-        .then((upcomingMeetings: IMeeting[]): void => {
-          upcomingMeetings.forEach((element:IMeeting) => {
-            let day = 'day' + element.start.getDay();
-            if(!!file[day])
-              file[day].push(element);
-            else
-              file[day] = [element];
-          });
-          resolve(file);
-        });
-    });
+  
   
 
-    return new Promise<any>((resolve: (roms: any) => void, reject: (error: any) => void): void => {
-      
-      httpClient.get(`https://graph.microsoft.com/beta/me/findRooms(RoomList='DHCFRooms@dcgovict.onmicrosoft.com')`, HttpClient.configurations.v1, {
-        headers: {
-          'Accept': 'application/json;odata.metadata=none',
-          'Authorization': 'Bearer ' + accessToken
-        }
-      })
-        .then((response: HttpClientResponse): Promise<{ value: IRoomItem[] }> => {
-          return response.json();
-        })
-        .then((todayMeetings: { value: IRoomItem[] }): void => {
-          if(!todayMeetings)
-           resolve([]);
-          Promise.all(todayMeetings.value.map(getEvents))
-          .then((aa:any)=>{
-            resolve(aa);
-          });
-          
-        }, (error: any): void => {
-          reject(error);
-        });
-    });
-  }
-
-
-  private static  applyDate() {
-    let starttime = moment().startOf('isoWeek').format('YYYY-MM-DD')+'T04:00:00.000Z'; //moment('12/12/2018')
-    let endtime = moment().endOf('isoWeek').format('YYYY-MM-DD')+'T03:59:59.000Z';
-    return `?startdatetime=${starttime}&enddatetime=${endtime}`;
-}
-  private static getEvents(accessToken: string, httpClient: HttpClient, room:string): Promise<IMeeting[]> {
-    return new Promise<any>((resolve: (meetings: IMeeting[]) => void, reject: (error: any) => void): void => {
-      var _timestring = BookARoom.applyDate();
-      
-      httpClient.get(`https://graph.microsoft.com/v1.0/users/${room}/calendarview${_timestring}`, HttpClient.configurations.v1, {
-        headers: {
-          'Accept': 'application/json;odata.metadata=none',
-          'Authorization': 'Bearer ' + accessToken
-        }
-      })
-        .then((response: HttpClientResponse): Promise<{ value: ICalendarMeeting[] }> => {
-          return response.json();
-        })
-        .then((todayMeetings: { value: ICalendarMeeting[] }): void => {
-          const upcomingMeetings: IMeeting[] = [];
-          for (let i: number = 0; i < todayMeetings.value.length; i++) {
-            const meeting: ICalendarMeeting = todayMeetings.value[i];
-            upcomingMeetings.push(BookARoom.getMeeting(meeting));
-          }
-          resolve(upcomingMeetings);
-        }, (error: any): void => {
-          reject(error);
-        });
-    });
-  }
-  
-
-  private static getMeeting(calendarMeeting: ICalendarMeeting): IMeeting {
-    return {
-      id: calendarMeeting.id,
-      subject: calendarMeeting.subject,
-      start: new Date(calendarMeeting.start.dateTime + 'Z'),
-      end: new Date(calendarMeeting.end.dateTime + 'Z'),
-      webLink: calendarMeeting.webLink,
-      isAllDay: calendarMeeting.isAllDay,
-      location: calendarMeeting.location.displayName,
-      organizer: `${calendarMeeting.organizer.emailAddress.name} <${calendarMeeting.organizer.emailAddress.address}>`,
-      status: calendarMeeting.showAs
-    };
-  }
 
 }

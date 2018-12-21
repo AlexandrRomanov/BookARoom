@@ -1,6 +1,7 @@
 import { IListItem, IRoomItem } from './IListItem';
 import { IListItemAction, IRoomItemAction } from './IListItemAction';
 import { IMeeting } from '../../../../lib/webparts/bookARoom/components/IMeeting';
+import { WebPartContext } from '@microsoft/sp-webpart-base';
 
 export interface IListItemProps {
   item: IListItem;
@@ -25,7 +26,6 @@ export interface IEditMeetingProps {
   lokations:any[],
   onClose: () => void;
   onSave: (meeting:any) => void;
+  context:WebPartContext
 }
-export interface ITokenHandlerProps {
-  onChangeToken: (token:string) => void;
-}
+

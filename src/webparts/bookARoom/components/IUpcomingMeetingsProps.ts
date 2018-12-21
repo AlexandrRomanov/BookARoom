@@ -1,7 +1,7 @@
-import { HttpClient } from '@microsoft/sp-http';
+import { WebPartContext } from '@microsoft/sp-webpart-base';
 
 export interface IUpcomingMeetingsProps {
     title: string;
-    httpClient: HttpClient;
+    context: WebPartContext;
     webPartId: string;
 }

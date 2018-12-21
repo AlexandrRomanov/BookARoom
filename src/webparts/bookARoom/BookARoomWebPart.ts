@@ -6,10 +6,8 @@ import {
   IPropertyPaneConfiguration,
   PropertyPaneTextField
 } from '@microsoft/sp-webpart-base';
-
 import * as strings from 'BookARoomWebPartStrings';
 import BookARoom from './components/BookARoom';
-import { IBookARoomProps } from './components/IBookARoomProps';
 import { IUpcomingMeetingsWebPartProps } from './IUpcomingMeetingsWebPartProps';
 
 export interface IBookARoomWebPartProps {
@@ -22,7 +20,7 @@ export default class BookARoomWebPart extends BaseClientSideWebPart<IUpcomingMee
     const element: React.ReactElement<IUpcomingMeetingsWebPartProps> = React.createElement(
       BookARoom,
       {
-        httpClient: this.context.httpClient,
+        context: this.context,
         title: this.properties.title,
         webPartId: this.context.instanceId
       }

@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { ITokenHandlerProps } from './IListItemProps';
-import { ITokenHandlerState } from './IUpcomingMeetingsState';
+import { ITokenHandlerProps } from './ITokenHandlerProps';
+import { ITokenHandlerState } from './ITokenHandlerState';
 
 export class TokenHandler extends React.Component<ITokenHandlerProps, ITokenHandlerState> {
 
@@ -45,7 +45,6 @@ export class TokenHandler extends React.Component<ITokenHandlerProps, ITokenHand
   private refreshToken(that:this){
     if(that.chackExpiredToken(that.state.expiresTokenDate, that.state.expires_in)){
       let localStorage = that.getLocalStorage(that.config.LocalStorage);
-      console.log(localStorage);
       let expiresTokenDate = null;
       if(!!localStorage && !!localStorage.token && !!localStorage.expiresTokenDate && !!localStorage.expires_in)
         expiresTokenDate = new Date(localStorage.expiresTokenDate);

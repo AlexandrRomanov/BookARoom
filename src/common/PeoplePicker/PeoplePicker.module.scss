@@ -1,0 +1,17 @@
+.PeoplePicker {
+    button {
+        min-width: 0;
+        margin-left: 0;
+    }
+    :global{
+        .ms-PickerPersona-container {
+            overflow: hidden;
+        }
+        .ms-SelectionZone .ms-BasePicker-text {
+            min-width: 50px;
+            overflow: hidden;
+        }
+    }
+}
+
+
