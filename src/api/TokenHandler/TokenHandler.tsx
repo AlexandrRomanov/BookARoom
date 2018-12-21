@@ -48,7 +48,7 @@ export class TokenHandler extends React.Component<ITokenHandlerProps, ITokenHand
       let expiresTokenDate = null;
       if(!!localStorage && !!localStorage.token && !!localStorage.expiresTokenDate && !!localStorage.expires_in)
         expiresTokenDate = new Date(localStorage.expiresTokenDate);
-      if(!that.chackExpiredToken(expiresTokenDate, localStorage.expires_in))
+      if(!!localStorage && !that.chackExpiredToken(expiresTokenDate, localStorage.expires_in))
       {
         that.setToken(that, localStorage.token, expiresTokenDate, localStorage.expires_in);
       }
