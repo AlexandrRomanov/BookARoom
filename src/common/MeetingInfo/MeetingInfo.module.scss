@@ -1,0 +1,12 @@
+.MeetingInfo{
+    width: 100%;
+    max-width: 650px;
+    .attendees{
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    .InfoRow{
+        padding-bottom: 10px;
+    }
+}
+

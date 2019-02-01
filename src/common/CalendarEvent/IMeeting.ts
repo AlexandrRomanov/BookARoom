@@ -1,4 +1,4 @@
-import { IEvent } from "../../../api/events/IEvent";
+import { IEvent } from "../../api/events/IEvent";
 
 export interface IMeeting {
     id?: string;

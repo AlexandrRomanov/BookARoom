@@ -1,3 +1,7 @@
+import { WebPartContext } from "@microsoft/sp-webpart-base";
+
 export interface IBookARoomProps {
-  description: string;
+  title: string;
+  context: WebPartContext;
+  webPartId: string;
 }

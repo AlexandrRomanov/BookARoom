@@ -16,7 +16,6 @@ export class TokenHandler extends React.Component<ITokenHandlerProps, ITokenHand
     };
   constructor(props: ITokenHandlerProps, context?: any) {
     super(props);
-
     this.state = {
         token:null,
         expiresTokenDate:null,

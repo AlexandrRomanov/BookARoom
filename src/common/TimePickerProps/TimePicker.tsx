@@ -2,19 +2,12 @@ import * as React from 'react';
 import * as moment from 'moment';
 import { Dialog, DialogType, DialogFooter } from 'office-ui-fabric-react/lib/Dialog';
 import { TextField, PrimaryButton} from 'office-ui-fabric-react/lib';
-import fixStyle from '../../../scss/fixForFabricInOldDesign.module.scss';
+import fixStyle from '../../scss/fixForFabricInOldDesign.module.scss';
+import { ITimePickerProps } from './ITimePickerProps';
+import { ITimePickerState } from './ITimePickerState';
 
-export interface ITimePickerProps {
-    date: Date;
-    onChanged: any;
-    label: string;
-}
-export interface ITimePickerState {
-    half: string[];
-    hours: string[];
-    minutes: string[];
-    visibleTimePiker: boolean;
-}
+
+
 
 export default class TimePicker extends React.Component<ITimePickerProps, ITimePickerState> {
     constructor(props: ITimePickerProps) {

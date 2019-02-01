@@ -303,6 +303,21 @@
       content: "\E890";
     }
   }
+  .RowPadding{
+    padding-bottom: 10px;
+  }
+  .CurrentWeek{
+    padding: 5px 5px;
+    display: inline-block;
+  }
+  .MyEventsHeder{
+    height: 32px;
+    line-height: 32px;
+  }
+  .MyEvents{
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 5px;
+  }
 }
 :global{
   #sideNavBox{
@@ -310,5 +325,9 @@
   }
   #contentBox{
     margin-left: 20px;
+  }
+  #workbenchPageContent,
+  .CanvasZone {
+    max-width: 100%;
   }
 }

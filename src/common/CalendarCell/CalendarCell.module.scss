@@ -1,0 +1,20 @@
+.CalendarCell{
+    height: 100%;
+    width: 100%;
+    position: relative;
+    .AddEventContainer{
+        height: 15px;
+        right: 0;
+        bottom: 0;
+        .AddEvent{
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            .AddEventHref{
+                color: #8764b8;
+                text-decoration: none;
+            }
+        }
+    }
+
+}

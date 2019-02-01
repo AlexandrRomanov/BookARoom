@@ -1,15 +1,14 @@
 import * as React from 'react';
-import { IEditMeetingProps } from './IListItemProps';
 import { Dialog, DialogType, DialogFooter } from 'office-ui-fabric-react/lib/Dialog';
-import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { PrimaryButton, DefaultButton } from 'office-ui-fabric-react/lib/Button';
-import { ValidatorForm, TextFieldValidator, DatePickerValidator } from '../../../controls/validator';
+import { ValidatorForm, TextFieldValidator, DatePickerValidator } from '../../controls/validator';
 import { DayOfWeek } from 'office-ui-fabric-react/lib/Calendar';
-import { IEditMeetingsState } from './IUpcomingMeetingsState';
-import TimePicker from './TimePicker';
+import TimePicker from '../TimePickerProps/TimePicker';
 import { Dropdown } from 'office-ui-fabric-react';
-import { PeoplePicker } from '../../../common/PeoplePicker';
+import { PeoplePicker } from '../PeoplePicker';
 import { WebPartContext } from '@microsoft/sp-webpart-base';
+import { IEditMeetingsState } from './IEditMeetingsState';
+import { IEditMeetingProps } from './IEditMeetingProps';
 
 export class EditMeeting extends React.Component<IEditMeetingProps, IEditMeetingsState> {
   _context:WebPartContext;
@@ -26,11 +25,13 @@ export class EditMeeting extends React.Component<IEditMeetingProps, IEditMeeting
       let location = {};
       if(nextProps.meeting.location){
         nextProps.lokations.forEach(element => {
-          if(element.title == nextProps.meeting.location.title)
+          if(element.key == nextProps.meeting.location.key)
             location = element;
         });
       }
       nextProps.meeting.location = location;
+      if(!!nextProps.meeting.id && nextProps.meeting.id.indexOf("tempId-")===0)
+        nextProps.meeting.id=null;
       this.setState({ meeting: nextProps.meeting });
     }
   }
