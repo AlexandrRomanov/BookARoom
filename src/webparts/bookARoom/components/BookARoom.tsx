@@ -102,13 +102,15 @@ export default class BookARoom extends React.Component<IBookARoomProps, IBookARo
             />
           </div>
           <div className="ms-Grid-col ms-sm2">
-          <div className={styles.MyEvents}>
-            <MyEvents
-              events={this.state.MyEvents}
-              editItem={(item)=>{ this.editMeeting(item, this) }}
-              viewItem={(item)=>{ this.viewMeeting(item, this) }}
-            ></MyEvents>
-          </div>
+            {!this.state.MyEvents.length ? null :
+              <div className={styles.MyEvents}>
+                <MyEvents
+                  events={this.state.MyEvents}
+                  editItem={(item)=>{ this.editMeeting(item, this) }}
+                  viewItem={(item)=>{ this.viewMeeting(item, this) }}
+                ></MyEvents>
+              </div>
+            }
           </div>
         </div>
         

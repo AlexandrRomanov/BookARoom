@@ -3,7 +3,7 @@
   "solution": {
     "name": "book a room",
     "id": "51c6f38b-00ef-41bb-86af-372d1d59acdc",
-    "version": "1.0.0.8",
+    "version": "1.0.0.9",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true
   },

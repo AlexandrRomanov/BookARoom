@@ -85,6 +85,7 @@
   }
 }
 .upcomingMeetings {
+  margin-bottom: 50px;
   .webPartTitle {
     margin-bottom: 0.7em;
     margin-left: 0.38em;
@@ -329,5 +330,8 @@
   #workbenchPageContent,
   .CanvasZone {
     max-width: 100%;
+  }
+  .SPPageChrome{
+    overflow-y: hidden;
   }
 }
