@@ -13,6 +13,7 @@ export interface IMeeting {
       key:string,
       title:string
     };
+    duration?: number;
     organizer?: string;
     status?: string;
     event?:IEvent;

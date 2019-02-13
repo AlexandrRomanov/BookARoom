@@ -22,6 +22,56 @@ export class EventsApi {
         this.httpClient = context.httpClient;
     }
 
+    public static Durations=[
+        {
+            key:'PT30M',
+            title:'30m',
+            time:30
+        },
+        {
+            key:'PT1H',
+            title:'1h',
+            time:60
+        },
+        {
+            key:'PT1H30M',
+            title:'1h 30m',
+            time:90
+        },
+        {
+            key:'PT2H',
+            title:'2h',
+            time:120
+        },
+        {
+            key:'PT2H30M',
+            title:'2h 30m',
+            time:150
+        }
+    ]
+    public static GetDurationsMarks(){
+        let result = {}
+        EventsApi.Durations.forEach((element,index) => {
+            result[index] = element.title
+        });
+        return result;
+    }
+    public static GetDurationIndexByTime(time:number){
+        let result =-1;
+        EventsApi.Durations.forEach((element,index) => {
+            if(element.time==time)
+                result = index;
+        });
+        return result;
+    }
+    public static GetDurationByKey(key:string){
+        let result =null;
+        let Durations =EventsApi.Durations.filter(x=>x.key==key);
+        if(!!Durations && Durations.length)
+            result = Durations[0];
+        return result;
+    }
+
     public AddEvent(accessToken: string, event: IMeeting): Promise<IRoomItem[]> {
         return new Promise<any>((resolve: (roms: any) => void, reject: (error: any) => void): void => {
             let timeZone = 'America/New_York';
@@ -33,6 +83,8 @@ export class EventsApi {
                 },
                 type: "required"
             });
+            let start = moment(event.start).format('YYYY-MM-DDTHH:mm:SS');
+            let end = moment(event.start).add(EventsApi.Durations[event.duration].time,'minutes').format('YYYY-MM-DDTHH:mm:SS');
             let data: IEvent = {
                 subject: event.subject,
                 body: {
@@ -40,11 +92,11 @@ export class EventsApi {
                     content: event.body,
                 },
                 start: {
-                    dateTime: moment(event.start).format('YYYY-MM-DDTHH:mm:SS'),
+                    dateTime: start,
                     timeZone: timeZone
                 },
                 end: {
-                    dateTime: moment(event.end).format('YYYY-MM-DDTHH:mm:SS'),
+                    dateTime: end,
                     timeZone: timeZone
                 },
                 location: {
@@ -53,6 +105,7 @@ export class EventsApi {
                 },
                 attendees: attendees
             }
+            //console.log(data)
 
             if (event.id) {
                 this.editEvent(event, data, accessToken, resolve, reject);
@@ -102,7 +155,32 @@ export class EventsApi {
                 reject(error);
             });
     }
-
+    public FindMeetingTimes(accessToken: string, data: any):Promise<any> {
+        return new Promise((resolve,reject)=>{
+        let url = 'https://graph.microsoft.com/v1.0/me/findMeetingTimes';
+        this.httpClient.post(url, HttpClient.configurations.v1, {
+            headers: {
+                'Accept': 'application/json;odata.metadata=none',
+                'Authorization': 'Bearer ' + accessToken,
+                'Content-Type': 'application/json',
+                'Prefer': 'outlook.timezone="Eastern Standard Time"'
+            },
+            body: JSON.stringify(data)
+        })
+            .then((response: HttpClientResponse): Promise<{
+                value: any;
+            }> => {
+                return response.json();
+            })
+            .then((result: {
+                value: any;
+            }): void => {
+                resolve(result);
+            }, (error: any): void => {
+                reject(error);
+            });
+        })
+    }
     public GetDashboardData(accessToken: string, date: moment.Moment): Promise<{ rooms: IRoomItem[], lokations: any[], MyEvents: IMeeting[] }> {
         return new Promise<any>((resolve, reject): void => {
             var _timestring = this.applyDate(date);
@@ -266,12 +344,14 @@ export class EventsApi {
         return `?startdatetime=${starttime}&enddatetime=${endtime}`;
     }
     private getMeeting(event: IEvent): IMeeting {
+        let start = new Date(event.start.dateTime + 'Z');
+        let end = new Date(event.end.dateTime + 'Z');
         return {
             id: event.id,
             subject: event.subject,
             body: event.body.content,
-            start: new Date(event.start.dateTime + 'Z'),
-            end: new Date(event.end.dateTime + 'Z'),
+            start: start,
+            end: end,
             webLink: event.webLink,
             isAllDay: event.isAllDay,
             location: {
@@ -281,8 +361,14 @@ export class EventsApi {
             organizer: `${event.organizer.emailAddress.name} <${event.organizer.emailAddress.address}>`,
             status: event.showAs,
             event: event,
-            attendees: this.attendeesToUsers(event.attendees, event.organizer, event.location.displayName)
+            attendees: this.attendeesToUsers(event.attendees, event.organizer, event.location.displayName),
+            duration: this.getDuration(start, end)
         };
+    }
+    private getDuration(start:Date, end:Date){
+        let time = moment(end).diff(moment(start))/60000;
+        let duration = EventsApi.GetDurationIndexByTime(time);
+        return duration;
     }
     private attendeesToUsers(attendees: IAttendees[], organizer: IAttendees, location: string): IUser[] {
         let result = [];

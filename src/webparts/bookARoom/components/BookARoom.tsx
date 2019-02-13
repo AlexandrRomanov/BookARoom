@@ -44,12 +44,17 @@ export default class BookARoom extends React.Component<IBookARoomProps, IBookARo
       token:null,
       date:date,
       currentWeek:this.getCurrentWeek(date),
-      MyEvents:[]
+      MyEvents:[],
+      start:false
     };
   }
  
   public componentDidUpdate(prevProps: IBookARoomProps, prevState: IBookARoomState, prevContext: any): void {
-    if (!prevState.token && !!this.state.token) {
+    if (!this.state.start && !!this.state.token) {
+      this.setState((prevState: IBookARoomState): IBookARoomState => {
+        prevState.start = true;
+        return prevState;
+      });
       this.changeDate();
     }
   }
@@ -113,7 +118,6 @@ export default class BookARoom extends React.Component<IBookARoomProps, IBookARo
             }
           </div>
         </div>
-        
         <EditMeeting
           hidden = { !this.state.showNewMeetinng}
           meeting = { this.state.meetinng }
@@ -121,6 +125,7 @@ export default class BookARoom extends React.Component<IBookARoomProps, IBookARo
           onSave = { this.addNewMeeting }
           onClose = { this._closeDialog }
           context = {this._context}
+          token = {this.state.token}
         />
         <MeetingInfo  hidden = { !this.state.showMeetinngInfo}
           meeting = { this.state.meetinngInfo }

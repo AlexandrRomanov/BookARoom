@@ -12,9 +12,11 @@ import { ITimePickerState } from './ITimePickerState';
 export default class TimePicker extends React.Component<ITimePickerProps, ITimePickerState> {
     constructor(props: ITimePickerProps) {
       super(props);
+      //debugger
       this.state = {
         hours: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'],
-        minutes: ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'],
+        //minutes: ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'],
+        minutes: ['00','30'],
         half: ['AM', 'PM'],
         visibleTimePiker: false
       };
@@ -22,6 +24,9 @@ export default class TimePicker extends React.Component<ITimePickerProps, ITimeP
     }
 
     public closeTimePicker =(e) => {
+        //debugger;
+        if(!this.state.visibleTimePiker && !this.props.date)
+            this.props.onChanged(new Date());
         this.setState({visibleTimePiker: !this.state.visibleTimePiker});
     }
 
@@ -69,7 +74,7 @@ export default class TimePicker extends React.Component<ITimePickerProps, ITimeP
     }
 
     public render(): React.ReactElement<ITimePickerProps> {
-        let currentTime = moment(this.props.date).format('hh : mm A');
+        let currentTime = this.props.date ? moment(this.props.date).format('hh : mm A') : null;
         let currentHalf = moment(this.roundMinutes(this.props.date)).format('A');
         let currentHour = moment(this.roundMinutes(this.props.date)).format('hh');
         let currentMinute = moment(this.roundMinutes(this.props.date)).format('mm');
@@ -98,7 +103,7 @@ export default class TimePicker extends React.Component<ITimePickerProps, ITimeP
                 >
                 <div className="ms-Grid">
                     <div className="ms-Grid-row">
-                        <div className="ms-Grid-col ms-sm6">
+                        <div className="ms-Grid-col ms-sm7">
                             <table>
                                 <tr>
                                     {this.state.half.map(half => 
@@ -133,7 +138,7 @@ export default class TimePicker extends React.Component<ITimePickerProps, ITimeP
                                 </tr>
                             </table>
                         </div>
-                        <div className="ms-Grid-col ms-sm6">
+                        <div className="ms-Grid-col ms-sm3">
                             <table>
                                 <tr><td colSpan={4}>Minutes</td></tr>
                                 <tr>

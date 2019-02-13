@@ -15,6 +15,7 @@ export interface IBookARoomState {
   date: moment.Moment;
   currentWeek:string;
   MyEvents:IMeeting[];
+  start:boolean;
 }
 
 

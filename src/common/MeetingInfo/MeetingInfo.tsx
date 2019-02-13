@@ -26,7 +26,7 @@ export class MeetingInfo extends React.Component<IMeetingInfoProps, IMeetingInfo
         onDismiss={ onClose }
         dialogContentProps={{
           type: DialogType.normal,
-          title: 'Meetinng Info'
+          title: 'Meeting Info'
         }}
         modalProps={{
           titleAriaId: 'myLabelId',
@@ -43,7 +43,15 @@ export class MeetingInfo extends React.Component<IMeetingInfoProps, IMeetingInfo
             </div>
             <div className={["ms-Grid-row", style.InfoRow].join(" ")}>
               <div className="ms-Grid-col ms-sm4"><b>Organizer: </b></div>
-              <div className="ms-Grid-col ms-sm8">{this.getUserInfo(this.props.meeting.organizer)}</div>    
+              <div className="ms-Grid-col ms-sm8">
+                <div>
+                  <img className={style.photo} 
+                      src={`${this._context.pageContext.site.absoluteUrl}/_layouts/15/userphoto.aspx?size=L&accountname=${this.props.meeting.organizer.mail}`}/>
+                </div>
+                <div>
+                  {this.getUserInfo(this.props.meeting.organizer)}
+                </div>
+              </div>    
             </div>
             <div className={["ms-Grid-row", style.InfoRow].join(" ")}>
               <div className="ms-Grid-col ms-sm4"><b>Attendees: </b></div>
@@ -80,7 +88,7 @@ export class MeetingInfo extends React.Component<IMeetingInfoProps, IMeetingInfo
         name = user.surname + ' ' + user.givenName;
       result = <span>
         <span>{name}</span>
-        <span>{user.jobTitle}</span>
+        {!user.jobTitle?null:<span> - {user.jobTitle}</span>}
       </span>
     }
     return result;

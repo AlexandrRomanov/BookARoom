@@ -1,0 +1,41 @@
+$TitleColor: "[theme: themeDarker]";
+$TitleBGColor: "[theme: themeLighter]";
+$FormBG: "[theme: themeLighterAlt]";
+$PropNameColor: "[theme: themePrimary]";
+$SectionTitleColor: "[theme: themePrimary]";
+$PrimaryBtnBG: "[theme: orangeLighter]";
+$DefaultBtnBG: "[theme: tealLight]";
+
+.EditMeeting{
+    :global{
+        .ms-Dialog-main{
+            width: auto;
+            max-width: 800px;
+            min-width: 800px;
+        }
+    }
+    .Row{
+        padding-bottom: 10px;
+    }
+    .Content{
+        width: 100%;
+    }
+    .SliderDiv{
+        margin: 10px 0 35px 0;
+        .Slider{
+            margin: 0 12px;
+            :global{
+                .rc-slider-track{
+                    background-color: $PropNameColor;
+                }
+                .rc-slider-dot-active,
+                .rc-slider-handle{
+                    border-color: $PropNameColor;
+                    :active{
+                        box-shadow:0 0 5px $PropNameColor;
+                    }
+                }        
+            }
+        }
+    }
+}

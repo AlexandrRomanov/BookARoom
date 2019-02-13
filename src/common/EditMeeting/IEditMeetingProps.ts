@@ -6,6 +6,7 @@ export interface IEditMeetingProps {
     lokations:any[],
     onClose: () => void;
     onSave: (meeting:any) => void;
-    context:WebPartContext
+    context:WebPartContext,
+    token:any
 }
   

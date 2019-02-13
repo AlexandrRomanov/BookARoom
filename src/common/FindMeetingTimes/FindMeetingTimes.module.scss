@@ -1,0 +1,29 @@
+$PropNameColor: "[theme: themePrimary]";
+
+.FindMeetingTimes{
+    :global{
+        .ms-Dialog-main{
+            width: auto;
+            max-width: 500px;
+            min-width: 500px;
+        }
+    }
+   .SliderDiv{
+        margin: 10px 0 35px 0;
+       .Slider{
+            margin: 0 12px;
+            :global{
+                .rc-slider-track{
+                    background-color: $PropNameColor;
+                }
+                .rc-slider-dot-active,
+                .rc-slider-handle{
+                    border-color: $PropNameColor;
+                    :active{
+                        box-shadow:0 0 5px $PropNameColor;
+                    }
+                }
+            }
+       }
+   }
+}

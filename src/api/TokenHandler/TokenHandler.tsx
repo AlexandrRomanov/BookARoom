@@ -56,7 +56,7 @@ export class TokenHandler extends React.Component<ITokenHandlerProps, ITokenHand
                     scope=${encodeURI(that.config.scope)}&redirect_uri=${encodeURI(window.location.href)}`;
         let popUp = window.open(url, that.config.target);
         let interval = setInterval(function() {   
-          if(!!popUp.location.href && popUp.location.href.indexOf(that.config.access_token)>-1){
+          if(/*!!popUp && !!popUp.location &&*/ !!popUp.location.href && popUp.location.href.indexOf(that.config.access_token)>-1){
             let split =popUp.location.href.split(that.config.access_token)[1].split("&");
             let token = split[0];
             let expires_in = that.config.default_expires_in;
