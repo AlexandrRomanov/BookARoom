@@ -1,4 +1,4 @@
-import { IMeeting } from "../../../lib/common/CalendarEvent/IMeeting";
+import { IMeeting } from "../CalendarEvent/IMeeting";
 
 export interface IMyEventsProps{
     events:IMeeting[],
