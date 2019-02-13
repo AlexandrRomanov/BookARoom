@@ -3,10 +3,10 @@ import { HttpClient, HttpClientResponse } from "@microsoft/sp-http";
 import * as moment from 'moment';
 import { IEvent } from "./IEvent";
 import { values } from "office-ui-fabric-react";
-import { IAttendees } from "../../../lib/api/events/IAttendees";
-import { IMeeting } from "../../common/CalendarEvent/IMeeting";
-import { IUser } from "../../../lib/common/CalendarEvent/IMeeting";
+
+import { IMeeting, IUser } from "../../common/CalendarEvent/IMeeting";
 import { IRoomItem } from "../../common/RoomItem/IRoomItem";
+import { IAttendees } from "./IAttendees";
 const axios = require('axios');
 
 

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import 'react-table/react-table.css'
-import  './CalendarStyle.css';
+//import  './CalendarStyle.css';
 import styles from './BookARoom.module.scss';
 import { IBookARoomState } from './IBookARoomState';
 import '../../WebPartAuthenticationContext';

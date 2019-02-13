@@ -1,5 +1,5 @@
-import { IMeeting } from "../../../lib/webparts/bookARoom/components/IMeeting";
+import { IMeeting } from "../CalendarEvent/IMeeting";
 
 export interface IMeetingInfoState {
     meeting:IMeeting;
-  }
+}
