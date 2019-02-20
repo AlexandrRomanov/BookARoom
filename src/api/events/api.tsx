@@ -22,52 +22,52 @@ export class EventsApi {
         this.httpClient = context.httpClient;
     }
 
-    public static Durations=[
+    public static Durations = [
         {
-            key:'PT30M',
-            title:'30m',
-            time:30
+            key: 'PT30M',
+            title: '30m',
+            time: 30
         },
         {
-            key:'PT1H',
-            title:'1h',
-            time:60
+            key: 'PT1H',
+            title: '1h',
+            time: 60
         },
         {
-            key:'PT1H30M',
-            title:'1h 30m',
-            time:90
+            key: 'PT1H30M',
+            title: '1h 30m',
+            time: 90
         },
         {
-            key:'PT2H',
-            title:'2h',
-            time:120
+            key: 'PT2H',
+            title: '2h',
+            time: 120
         },
         {
-            key:'PT2H30M',
-            title:'2h 30m',
-            time:150
+            key: 'PT2H30M',
+            title: '2h 30m',
+            time: 150
         }
     ]
-    public static GetDurationsMarks(){
+    public static GetDurationsMarks() {
         let result = {}
-        EventsApi.Durations.forEach((element,index) => {
+        EventsApi.Durations.forEach((element, index) => {
             result[index] = element.title
         });
         return result;
     }
-    public static GetDurationIndexByTime(time:number){
-        let result =-1;
-        EventsApi.Durations.forEach((element,index) => {
-            if(element.time==time)
+    public static GetDurationIndexByTime(time: number) {
+        let result = -1;
+        EventsApi.Durations.forEach((element, index) => {
+            if (element.time == time)
                 result = index;
         });
         return result;
     }
-    public static GetDurationByKey(key:string){
-        let result =null;
-        let Durations =EventsApi.Durations.filter(x=>x.key==key);
-        if(!!Durations && Durations.length)
+    public static GetDurationByKey(key: string) {
+        let result = null;
+        let Durations = EventsApi.Durations.filter(x => x.key == key);
+        if (!!Durations && Durations.length)
             result = Durations[0];
         return result;
     }
@@ -84,7 +84,7 @@ export class EventsApi {
                 type: "required"
             });
             let start = moment(event.start).format('YYYY-MM-DDTHH:mm:SS');
-            let end = moment(event.start).add(EventsApi.Durations[event.duration].time,'minutes').format('YYYY-MM-DDTHH:mm:SS');
+            let end = moment(event.start).add(EventsApi.Durations[event.duration].time, 'minutes').format('YYYY-MM-DDTHH:mm:SS');
             let data: IEvent = {
                 subject: event.subject,
                 body: {
@@ -155,30 +155,40 @@ export class EventsApi {
                 reject(error);
             });
     }
-    public FindMeetingTimes(accessToken: string, data: any):Promise<any> {
-        return new Promise((resolve,reject)=>{
-        let url = 'https://graph.microsoft.com/v1.0/me/findMeetingTimes';
-        this.httpClient.post(url, HttpClient.configurations.v1, {
-            headers: {
-                'Accept': 'application/json;odata.metadata=none',
-                'Authorization': 'Bearer ' + accessToken,
-                'Content-Type': 'application/json',
-                'Prefer': 'outlook.timezone="Eastern Standard Time"'
-            },
-            body: JSON.stringify(data)
-        })
-            .then((response: HttpClientResponse): Promise<{
-                value: any;
-            }> => {
-                return response.json();
+    public FindMeetingTimes(accessToken: string, roomsData: any[]) {
+        return new Promise<any>((resolve: (roms: any) => void, reject: (error: any) => void): void => {
+            Promise.all(roomsData.map((data: any) => { return this.findMeetingTimes(accessToken, data); }))
+                .then((result: any[]) => {
+                    resolve(result);
+                });
+
+        });
+    }
+
+    private findMeetingTimes(accessToken: string, data: any): Promise<any> {
+        return new Promise((resolve, reject) => {
+            let url = 'https://graph.microsoft.com/v1.0/me/findMeetingTimes';
+            this.httpClient.post(url, HttpClient.configurations.v1, {
+                headers: {
+                    'Accept': 'application/json;odata.metadata=none',
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'outlook.timezone="Eastern Standard Time"'
+                },
+                body: JSON.stringify(data)
             })
-            .then((result: {
-                value: any;
-            }): void => {
-                resolve(result);
-            }, (error: any): void => {
-                reject(error);
-            });
+                .then((response: HttpClientResponse): Promise<{
+                    value: any;
+                }> => {
+                    return response.json();
+                })
+                .then((result: {
+                    value: any;
+                }): void => {
+                    resolve(result);
+                }, (error: any): void => {
+                    reject(error);
+                });
         })
     }
     public GetDashboardData(accessToken: string, date: moment.Moment): Promise<{ rooms: IRoomItem[], lokations: any[], MyEvents: IMeeting[] }> {
@@ -365,8 +375,8 @@ export class EventsApi {
             duration: this.getDuration(start, end)
         };
     }
-    private getDuration(start:Date, end:Date){
-        let time = moment(end).diff(moment(start))/60000;
+    private getDuration(start: Date, end: Date) {
+        let time = moment(end).diff(moment(start)) / 60000;
         let duration = EventsApi.GetDurationIndexByTime(time);
         return duration;
     }
@@ -406,13 +416,13 @@ export class EventsApi {
             this.getAllattendees(accessToken, meeting.attendees),
         ]).then(result => {
             return {
-                meeting:meeting,
-                organizer:result[0],
-                attendees:result[1]
+                meeting: meeting,
+                organizer: result[0],
+                attendees: result[1]
             };
         })
     }
-    private geuUser(value:string){
+    private geuUser(value: string) {
         let result: any = {}
         value = value ? value.replace('>', '') : '';
         let split = value.split('<');
@@ -430,7 +440,7 @@ export class EventsApi {
 
         });
     }
-    private getUserInfo(accessToken: string, user:any): Promise<any> {
+    private getUserInfo(accessToken: string, user: any): Promise<any> {
         return new Promise<any>((resolve: (meetings: any) => void): void => {
             this.httpClient.get(`https://graph.microsoft.com/v1.0/users/${user.Email}/`, HttpClient.configurations.v1, {
                 headers: {
@@ -438,27 +448,27 @@ export class EventsApi {
                     'Authorization': 'Bearer ' + accessToken
                 }
             }).then((response: HttpClientResponse): Promise<{ value: any }> => {
-                    return response.json();
-                }).then((result: any): void => {
-                    if (result.error) {
-                        console.error(result.error);
-                        resolve({
-                            external: true,
-                            mail: user.Email,
-                            displayName: user.primaryText
-                        })
-                    }
-                    else
-                        resolve(result);
-                }, (error: any): void => {
-                    console.error(error);
+                return response.json();
+            }).then((result: any): void => {
+                if (result.error) {
+                    console.error(result.error);
                     resolve({
                         external: true,
                         mail: user.Email,
                         displayName: user.primaryText
                     })
-                });
+                }
+                else
+                    resolve(result);
+            }, (error: any): void => {
+                console.error(error);
+                resolve({
+                    external: true,
+                    mail: user.Email,
+                    displayName: user.primaryText
+                })
+            });
         });
     }
-    
+
 }
