@@ -13,32 +13,32 @@ export class CalendarCell extends React.Component<ICalendarCellProps, ICalendarC
         this.state={
             isHovered:false,
             hoverIndex:0
-        }
+        };
     }
     public render(): JSX.Element {
         const btnClass = this.state.isHovered ? "isHovered" : "";
         return  (<div className={[btnClass, style.CalendarCell].join(" ")}
-                        onMouseEnter={()=>{this.hoverEnter(this)}}
-                        onMouseLeave={()=>{this.hoverLeave(this)}}>
+                        onMouseEnter={()=>{this.hoverEnter(this);}}
+                        onMouseLeave={()=>{this.hoverLeave(this);}}>
                     {!this.props.meetings? null : this.props.meetings.map((item: IMeeting): JSX.Element => {
                     return <CalendarEvent item={item} 
-                                            editItem={(item)=>{ this.props.editItem(item); }} 
-                                            viewItem={(item)=>{ this.props.viewItem(item); }} 
+                                            editItem={(_item)=>{ this.props.editItem(_item); }} 
+                                            viewItem={(_item)=>{ this.props.viewItem(_item); }} 
                             />;
                     })}
                     <div className={style.AddEventContainer}>
                         {this.state.isHovered?<div className={style.AddEvent}
-                            onClick={ ()=>{ this.addEvent(this) }} 
+                            onClick={ ()=>{ this.addEvent(this); }} 
                             ><a href="#" className={style.AddEventHref}>+ Add Event</a></div> : null} 
                     </div>
-                </div>)
+                </div>);
     }
 
     private addEvent(that:any){
         let thisDate = that.props.date.clone();
-        let date = thisDate.startOf('isoWeek').add(that.props.dayofWeek, 'days')
+        let date = thisDate.startOf('isoWeek').add(that.props.dayofWeek, 'days');
         
-        console.log(that.props.lokation,that.props.dayofWeek,that.props.date)
+        console.log(that.props.lokation,that.props.dayofWeek,that.props.date);
         let tempId = "tempId-" + new Date().valueOf();
         let item = {
             id:tempId,
@@ -49,9 +49,7 @@ export class CalendarCell extends React.Component<ICalendarCellProps, ICalendarC
               title:''
             },
             attendees:[]
-          }
-          console.log(item);
-          debugger
+          };
         that.props.editItem(item);
     }
 

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import 'react-table/react-table.css'
+import 'react-table/react-table.css';
 //import  './CalendarStyle.css';
 import styles from './BookARoom.module.scss';
 import { IBookARoomState } from './IBookARoomState';
@@ -16,8 +16,8 @@ import { IBookARoomProps } from './IBookARoomProps';
 import { MyEvents } from '../../../common/MyEvents/MyEvents';
 
 export default class BookARoom extends React.Component<IBookARoomProps, IBookARoomState> {
-  eventsApi:EventsApi;
-  _context:WebPartContext
+  private eventsApi:EventsApi;
+  private _context:WebPartContext;
   constructor(props: IBookARoomProps) {
     super(props);
     this.eventsApi = new EventsApi(props.context);
@@ -51,9 +51,9 @@ export default class BookARoom extends React.Component<IBookARoomProps, IBookARo
  
   public componentDidUpdate(prevProps: IBookARoomProps, prevState: IBookARoomState, prevContext: any): void {
     if (!this.state.start && !!this.state.token) {
-      this.setState((prevState: IBookARoomState): IBookARoomState => {
-        prevState.start = true;
-        return prevState;
+      this.setState((state: IBookARoomState): IBookARoomState => {
+        state.start = true;
+        return state;
       });
       this.changeDate();
     }
@@ -101,8 +101,8 @@ export default class BookARoom extends React.Component<IBookARoomProps, IBookARo
         <div className="ms-Grid-row">
           <div className="ms-Grid-col ms-sm10">
             <Calendar rooms={this.state.rooms} 
-              editItem={(item)=>{ this.editMeeting(item, this) }}
-              viewItem={(item)=>{ this.viewMeeting(item, this) }}
+              editItem={(item)=>{ this.editMeeting(item, this); }}
+              viewItem={(item)=>{ this.viewMeeting(item, this); }}
               date={this.state.date}
             />
           </div>
@@ -111,8 +111,8 @@ export default class BookARoom extends React.Component<IBookARoomProps, IBookARo
               <div className={styles.MyEvents}>
                 <MyEvents
                   events={this.state.MyEvents}
-                  editItem={(item)=>{ this.editMeeting(item, this) }}
-                  viewItem={(item)=>{ this.viewMeeting(item, this) }}
+                  editItem={(item)=>{ this.editMeeting(item, this); }}
+                  viewItem={(item)=>{ this.viewMeeting(item, this); }}
                 ></MyEvents>
               </div>
             }
@@ -155,27 +155,27 @@ export default class BookARoom extends React.Component<IBookARoomProps, IBookARo
           prevState.showMeetinngInfo = true;
           return prevState;
         });
-      })
+      });
     }
   }
 
   private addNewMeeting = (meeteng:any): void => {
     this.eventsApi.AddEvent(this.state.token, meeteng);
-    this._closeDialog()
+    this._closeDialog();
   }
   private _openDialog = (): void => {
     this.setState((prevState: IBookARoomState, props: IBookARoomProps): IBookARoomState => {
       prevState.showNewMeetinng = true;
       return prevState;
     });
-  };
+  }
   private _closeInfoDialog = (): void => {
     this.setState((prevState: IBookARoomState, props: IBookARoomProps): IBookARoomState => {
       prevState.showMeetinngInfo = false;
       prevState.meetinngInfo = null;
       return prevState;
     });
-  };
+  }
   private _closeDialog = (): void => {
     this.setState((prevState: IBookARoomState): IBookARoomState => {
       prevState.showNewMeetinng = false;
@@ -190,14 +190,13 @@ export default class BookARoom extends React.Component<IBookARoomProps, IBookARo
       };
       return prevState;
     });
-  };
+  }
   
 private _PreviousWeek = (): void => {
   this.changeDate(-7);
 }
 
 private _NextWeek = (): void => {
-  debugger
   this.changeDate(7);
 }
 private changeDate(addDays:number=0){
@@ -220,12 +219,12 @@ private getCurrentWeek(date:moment.Moment):string{
 }
   private loadCalendar(date:moment.Moment): void {
     this.eventsApi.GetDashboardData(this.state.token, date)
-    .then(({rooms,lokations,MyEvents}): void => {
-      console.log(rooms,lokations,MyEvents)
+    .then(({rooms,lokations,myEvents}): void => {
+      console.log(rooms,lokations,myEvents);
       this.setState((prevState: IBookARoomState): IBookARoomState => {
         prevState.lokations = lokations;
         prevState.rooms = rooms;
-        prevState.MyEvents = MyEvents;
+        prevState.MyEvents = myEvents;
         prevState.loading = false;
         return prevState;
       });
@@ -235,7 +234,7 @@ private getCurrentWeek(date:moment.Moment):string{
         prevState.error = error;
         return prevState;
       });
-    })
+    });
   }
  
   

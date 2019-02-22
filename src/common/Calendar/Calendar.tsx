@@ -15,7 +15,7 @@ export class Calendar extends React.Component<ICalendarProps, {}> {
       Header: '',
       accessor: 'name',
       style:{ 'white-space': 'unset'},
-    }]
+    }];
     days.forEach((day,index) => {
       columns.push({
         Header: day,
@@ -23,7 +23,7 @@ export class Calendar extends React.Component<ICalendarProps, {}> {
         accessor: `day${index+1}`,
         style:{ 'white-space': 'unset'},
         Cell: props => this.getCell(props)
-      })
+      });
     });
     return (
       !rooms.length? null :
@@ -44,6 +44,6 @@ export class Calendar extends React.Component<ICalendarProps, {}> {
             date = {this.props.date}
             dayofWeek = {props.column.dayNumber} 
             lokation = {props.original.address}
-            ></CalendarCell>
+            ></CalendarCell>;
   }
 }

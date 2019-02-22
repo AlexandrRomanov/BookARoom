@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { ITokenHandlerProps } from './ITokenHandlerProps';
 import { ITokenHandlerState } from './ITokenHandlerState';
+const $ = require("jquery");
 
 export class TokenHandler extends React.Component<ITokenHandlerProps, ITokenHandlerState> {
 
@@ -18,6 +19,7 @@ export class TokenHandler extends React.Component<ITokenHandlerProps, ITokenHand
     super(props);
     this.state = {
         token:null,
+        token2:null,
         expiresTokenDate:null,
         expires_in:null,
         onChangeToken: props.onChangeToken
@@ -35,12 +37,38 @@ export class TokenHandler extends React.Component<ITokenHandlerProps, ITokenHand
  
   private getToken(){
     let that = this;
+    this.requestToken();
     that.refreshToken(that);
     setInterval(function() {  
       that.refreshToken(that);
     }, 60000);
   }
+  private requestToken() {  
+   /* let that = this;
+    $.ajax({  
+        "async": true,
+        "crossDomain": true,
+        "url": "https://cors-anywhere.herokuapp.com/https://login.windows.net/dc.gov/oauth2/v2.0/token",
+        "type": "POST",  
+        "headers": {  
+            "content-type": "application/x-www-form-urlencoded"  
+        },  
+        "data": {  
+            "grant_type": "client_credentials",  
+            "client_id": "e2a27625-d8aa-488b-a9e3-90be0a2e0268", 
+            "client_secret": "u1[Vy2GJ!4]tC!nSIBHo%B0]",
+            "scope": "https://graph.microsoft.com/.default"  
+        },  
+        success: function(response) {              
+            console.log(response)
+            that.setState((prevState: ITokenHandlerState): ITokenHandlerState => {
+              prevState.token2 = response.access_token;
+              return prevState;
+          });
+        }  
 
+    })  */
+}  
   private refreshToken(that:this){
     if(that.chackExpiredToken(that.state.expiresTokenDate, that.state.expires_in)){
       let localStorage = that.getLocalStorage(that.config.LocalStorage);
@@ -94,13 +122,13 @@ export class TokenHandler extends React.Component<ITokenHandlerProps, ITokenHand
     that.state.onChangeToken(token);
   }
 
-  writeToLocalStorage(cname: string, value: any) {
+  private writeToLocalStorage(cname: string, value: any) {
     if (typeof (Storage) !== "undefined") {
         localStorage.setItem(cname, JSON.stringify(value));
     }
   }
 
-  getLocalStorage(cname: string) {
+  private getLocalStorage(cname: string) {
     if (typeof (Storage) !== "undefined") {
         if (localStorage.getItem(cname) != null) {
             return JSON.parse(localStorage.getItem(cname));

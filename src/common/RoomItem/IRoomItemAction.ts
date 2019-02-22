@@ -2,6 +2,6 @@
 import { IRoomItem } from './IRoomItem';
 
 export interface IRoomItemAction {
-  item:IRoomItem
+  item:IRoomItem;
   action: () => void;
 }

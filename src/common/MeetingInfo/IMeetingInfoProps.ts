@@ -4,5 +4,5 @@ export interface IMeetingInfoProps {
     hidden:boolean;
     meeting:any;
     onClose: () => void;
-    context:WebPartContext
+    context:WebPartContext;
   }

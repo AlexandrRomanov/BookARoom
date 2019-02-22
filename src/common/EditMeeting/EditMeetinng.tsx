@@ -17,7 +17,7 @@ import { EventsApi } from '../../api/events/api';
 import { FindMeetingTimes } from '../FindMeetingTimes/FindMeetingTimes';
 
 export class EditMeeting extends React.Component<IEditMeetingProps, IEditMeetingsState> {
-  _context: WebPartContext;
+  private _context: WebPartContext;
   constructor(props: IEditMeetingProps, context?: any) {
     super(props);
     this._context = props.context;
@@ -29,7 +29,7 @@ export class EditMeeting extends React.Component<IEditMeetingProps, IEditMeeting
     };
   }
 
-  componentWillReceiveProps(nextProps) {
+  public componentWillReceiveProps(nextProps) {
     // You don't have to do this check first, but it can help prevent an unneeded render
     if (nextProps.meeting.id !== this.state.meeting.id) {
       let location = {};
@@ -49,7 +49,7 @@ export class EditMeeting extends React.Component<IEditMeetingProps, IEditMeeting
         this.setState({ startTime: nextProps.meeting.id ? nextProps.meeting.start : null });
     }
   }
-  save;
+  private save;
   public render(): JSX.Element {
     const hidden: boolean = this.props.hidden;
     const onClose = this.props.onClose;
@@ -135,7 +135,7 @@ export class EditMeeting extends React.Component<IEditMeetingProps, IEditMeeting
                   </div>
                 </div>
                 <div className={styles.SliderDiv}>
-                {<a href="#" onClick={() => { this.onTest() }} >{this.state.meeting.location.key ? (this.state.startTime ? 'Check meeting location and time.' : 'Find meeting time.') : (this.state.startTime ? 'Find meeting location.' : 'Find meeting location and time.') }</a>}
+                {<a href="#" onClick={() => { this.onFind(); }} >{this.state.meeting.location.key ? (this.state.startTime ? 'Check meeting location and time.' : 'Find meeting time.') : (this.state.startTime ? 'Find meeting location.' : 'Find meeting location and time.') }</a>}
                 </div>
               </div>
               <div className="ms-Grid-col ms-sm7">
@@ -157,8 +157,8 @@ export class EditMeeting extends React.Component<IEditMeetingProps, IEditMeeting
         </div>
         <FindMeetingTimes
           context={this._context}
-          onClose={() => { this._closeInfoDialog() }}
-          onSave={() => { this._closeInfoDialog() }}
+          onClose={() => { this._closeInfoDialog(); }}
+          onSave={() => { this._closeInfoDialog(); }}
           hidden={this.state.HiddenFindMeetingTimes}
           lokations={this.props.lokations}
           token={this.props.token}
@@ -173,23 +173,24 @@ export class EditMeeting extends React.Component<IEditMeetingProps, IEditMeeting
       prevState.HiddenFindMeetingTimes = true;
       return prevState;
     });
-  };
-  private onTest() {
+  }
+  private onFind() {
     this.setState((prevState: IEditMeetingsState, props: IEditMeetingProps): IEditMeetingsState => {
       prevState.HiddenFindMeetingTimes = false;
       prevState.FindMeetingTimesEvent = {
         location:this.state.meeting.location,
         startDate:this.state.startTime,
         duration:this.state.meeting.duration,
+        attendees:this.state.meeting.attendees,
         id:Math.random()
-      }
+      };
       return prevState;
     });
   }
 
   private onSelectUser = (user: any[]): void => {
     this.setState(prevState => {
-      prevState.meeting.attendees = user
+      prevState.meeting.attendees = user;
       return {
         ...prevState
       };
@@ -222,5 +223,5 @@ export class EditMeeting extends React.Component<IEditMeetingProps, IEditMeeting
         prevState.newMeetinng = false;
         return prevState;
       });*/
-  };
+  }
 }

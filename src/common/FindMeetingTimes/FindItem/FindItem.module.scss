@@ -1,0 +1,17 @@
+$PropNameColor: "[theme: themePrimary]";
+.FindItem{
+    display: block;
+    margin: 25px 0!important;
+    height: 75px;
+    padding: 7px;
+    
+}
+:global{
+    .ms-Dropdown-callout{
+        min-width: 410px;
+    }
+    .selected{
+        border: 1px solid;
+        border-color: $PropNameColor;
+    }
+}

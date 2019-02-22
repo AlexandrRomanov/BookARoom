@@ -13,10 +13,11 @@ import styles from './FindMeetingTimes.module.scss';
 import { EventsApi } from '../../api/events/api';
 import Slider from 'rc-slider';
 import * as moment from 'moment';
+import { FindItem } from './FindItem/FindItem';
 
 export class FindMeetingTimes extends React.Component<IFindMeetingTimesProps, IFindMeetingTimesState> {
-  _context: WebPartContext;
-  eventsApi: EventsApi;
+  private _context: WebPartContext;
+  private eventsApi: EventsApi;
   constructor(props: IFindMeetingTimesProps) {
     super(props);
     this._context = props.context;
@@ -24,29 +25,32 @@ export class FindMeetingTimes extends React.Component<IFindMeetingTimesProps, IF
     lokations.splice(0, 0, { key: '', title: 'All Rooms' });
     this.eventsApi = new EventsApi(props.context);
     this.state = {
+      attendees: [],
       lokations: lokations,
       location: lokations[0],
       start: null,
       end: null,
       duration: null,
       id: null,
-      result: [],
       emptySuggestionsReason: null,
+      loading: false,
+      findResult: [],
+      selectedItem: null,
     };
   }
 
-  save;
-  componentWillReceiveProps(nextProps) {
+  private save;
+  public componentWillReceiveProps(nextProps) {
     // You don't have to do this check first, but it can help prevent an unneeded render
     if (!!nextProps.event && nextProps.event.id !== this.state.id) {
-      console.log(nextProps.event)
       this.setState(prevState => {
-        prevState.result = [];
+        prevState.findResult = [];
         prevState.id = nextProps.event.id;
         prevState.duration = nextProps.event.duration;
         let key = nextProps.event.location.key ? nextProps.event.location.key : "";
         let locations = this.state.lokations.filter(x => x.key == key);
         prevState.location = locations.length ? locations[0] : this.state.lokations[0];
+        prevState.attendees = nextProps.event.attendees;
         if (nextProps.event.startDate) {
           prevState.start = nextProps.event.startDate;
           let date = new Date(nextProps.event.startDate);
@@ -65,10 +69,23 @@ export class FindMeetingTimes extends React.Component<IFindMeetingTimesProps, IF
       });
     }
   }
+  private test(item: any) {
+    this.setState((prevState) => {
+      prevState.selectedItem = item;
+      return prevState;
+    });
+  }
+
   public render(): JSX.Element {
     const hidden: boolean = this.props.hidden;
     const onClose = this.props.onClose;
     this.save = this.props.onSave;
+    const loading: JSX.Element = this.state.loading ? <div style={{ margin: '0 auto', width: '7em' }}><div className={styles.spinner}><div className={`${styles.spinnerCircle} ${styles.spinnerNormal}`}></div><div className={styles.spinnerLabel}>Loading...</div></div></div> : <div />;
+    const findResult: JSX.Element = EventsApi.CheckArray(this.state.findResult) ? <div className="ms-Grid-row">{
+      this.state.findResult.map((item: any): JSX.Element => {
+        return <FindItem className={!!this.state.selectedItem && this.state.selectedItem.ID == item.ID ? 'selected' : ''} onClick={() => { this.test(item); }} item={item}></FindItem>;
+      })
+    }</div> : <div />;
     return (
       (<Dialog
         hidden={hidden}
@@ -85,10 +102,18 @@ export class FindMeetingTimes extends React.Component<IFindMeetingTimesProps, IF
           containerClassName: 'ms-dialogMainOverride'
         }}
       >
-        <ValidatorForm onSubmit={this._saveDialog} >
+        <ValidatorForm onSubmit={this._find} >
+          <PeoplePicker
+            label="Attendees"
+            defaultSelectedPeople={this.state.attendees}
+            selectPeople={this.onSelectUser}
+            itemLimit={30}
+            context={this._context}
+          />
           <Dropdown
             id="location"
             label="Location"
+            // multiSelect={true}
             selectedKey={this.state.location.key}
             onChanged={this.handleChangeValue('location')}
             options={this.state.lokations}
@@ -139,8 +164,10 @@ export class FindMeetingTimes extends React.Component<IFindMeetingTimesProps, IF
               }} marks={EventsApi.GetDurationsMarks()} step={null} />
             </div>
           </div>
-          {!this.state.result.length ? this.state.emptySuggestionsReason : <div>result: {this.state.result.length}</div>}
+          {loading}
+          {findResult}
           <DialogFooter>
+            {this.state.selectedItem ? <PrimaryButton onClick={() => { this.onSave(); }} text="Save" /> : null}
             <PrimaryButton type="submit" text="Find" />
             <DefaultButton onClick={onClose} text="Cancel" />
           </DialogFooter>
@@ -148,7 +175,11 @@ export class FindMeetingTimes extends React.Component<IFindMeetingTimesProps, IF
       </Dialog>)
     );
   }
+  private onSave() {
+    console.log(this.state.selectedItem,this.state.selectedItem)
+  }
   private handleChangeValue = name => value => {
+    //debugger
     this.setState((prevState) =>
       prevState[name] = value
     );
@@ -157,11 +188,58 @@ export class FindMeetingTimes extends React.Component<IFindMeetingTimesProps, IF
   public renderCategory = (category) => {
     return category.title;
   }
+  private index = 0;
+  private addItem(array: any[], item: any) {
+    if (item.confidence == 100) {
+      let startTime = moment(EventsApi.ToDate(item.meetingTimeSlot.start.dateTime)).format('MM/DD/YYYY HH:mm');
+      let start = moment(startTime);
+      let filtered = array.filter(x => x.StartTime == startTime);
+      item.ID = this.index;
+      if (EventsApi.CheckArray(filtered)) {
+        let find = filtered[0];
+        find.Items.push(item);
+      }
+      else {
+        array.push({
+          ID: this.index,
+          Start: start,
+          StartTime: startTime,
+          Items: [item]
+        });
+        this.index++;
+      }
+    }
 
-  private _saveDialog = (): void => {
+  }
+  private _find = (): void => {
+    this.setState((prevState: IFindMeetingTimesState): IFindMeetingTimesState => {
+      prevState.loading = true;
+      prevState.findResult = [];
+      return prevState;
+    });
     let roomsData = this.getRoomsData();
     this.eventsApi.FindMeetingTimes(this.props.token, roomsData).then(res => {
-      console.log(res);
+      this.setState((prevState: IFindMeetingTimesState): IFindMeetingTimesState => {
+        prevState.loading = false;
+        return prevState;
+      });
+      let arr = [];
+      if (EventsApi.CheckArray(res))
+        res.forEach((element) => {
+          if (EventsApi.CheckArray(element.result.meetingTimeSuggestions)) {
+            element.result.meetingTimeSuggestions.forEach(item => {
+              item.key = element.location.key;
+              item.title = element.location.title;
+              this.addItem(arr, item);
+            });
+          }
+        });
+      arr = arr.sort((a, b) => { return a.Start - b.Start; });
+      console.log(arr);
+      this.setState((prevState: IFindMeetingTimesState): IFindMeetingTimesState => {
+        prevState.findResult = arr;
+        return prevState;
+      });
       /*this.setState(prevState => {
         if (!!res.meetingTimeSuggestions && !!res.meetingTimeSuggestions.length) {
           prevState.result = res.meetingTimeSuggestions;
@@ -173,62 +251,104 @@ export class FindMeetingTimes extends React.Component<IFindMeetingTimesProps, IF
         }
         return prevState;
       });*/
-    })
+    });
     // this.save({});
-  };
-  getRoomsData() {
+  }
+  private getRoomsData() {
     let start = this.getDate('start');
     let end = this.getDate('end');
     let meetingDuration = this.getMeetingDuration();
+    let timeslots = this.getTimeslots(start, end);
     let result = [];
     if (this.state.location.key)
-      result.push(this.getNewMeetingTimesData(start, end,meetingDuration, [this.getNewAttendee(this.state.location.key)]));
+      result.push({
+        location: this.state.location,
+        data: this.getNewMeetingTimesData(timeslots, meetingDuration, this.getAttendees(this.state.location.key))
+      });
     else {
       this.state.lokations.forEach(element => {
         if (!!element.key)
-          result.push(this.getNewMeetingTimesData(start, end,meetingDuration, [this.getNewAttendee(element.key)]));
+          result.push({
+            location: element,
+            data: this.getNewMeetingTimesData(timeslots, meetingDuration, this.getAttendees(element.key))
+          });
       });
     }
 
 
     return result;
   }
-  
-  private getNewMeetingTimesData(start:string,end:string,meetingDuration:string,attendees:any[]=[], maxCandidates:number = 6, returnSuggestionReasons:boolean = true){
+  private getAttendees(roomAddress: string) {
+    let result = [];
+    if (!!roomAddress)
+      result.push(this.getNewAttendee(roomAddress));
+    if (this.state.attendees.length) {
+      this.state.attendees.forEach(element => {
+        if (!!element.Email)
+          result.push(this.getNewAttendee(element.Email));
+      });
+    }
+    return result;
+  }
+  private getTimeslots(start: moment.Moment, end: moment.Moment) {
+    let result = [];
+    let daysCount = Math.round(moment(end.diff(start)).toDate().valueOf() / 86400000) + 1;
+    for (let id = 0; id < daysCount; id++) {
+      let _start = start.clone();
+      _start.add(id, 'days');
+      let weekday = _start.weekday();
+      if (weekday != 6 && weekday != 0) {
+        _start.set({ hour: 9, minute: 0, second: 0, millisecond: 0 });
+        let _end = _start.clone();
+        _end.set({ hour: 18, minute: 0, second: 0, millisecond: 0 });
+        console.log(_start.format('YYYY-MM-DDTHH:mm:SS'), _end.format('YYYY-MM-DDTHH:mm:SS'));
+        result.push({
+          "start": {
+            "dateTime": _start.format('YYYY-MM-DDTHH:mm:SS'),
+            "timeZone": "Eastern Standard Time"
+          },
+          "end": {
+            "dateTime": _end.format('YYYY-MM-DDTHH:mm:SS'),
+            "timeZone": "Eastern Standard Time"
+          }
+        });
+      }
+    }
+
+    return result;
+  }
+  private getNewMeetingTimesData(timeslots: any[], meetingDuration: string, attendees: any[] = [], maxCandidates: number = 6, returnSuggestionReasons: boolean = true) {
     return {
       "attendees": attendees,
       "timeConstraint": {
         "activityDomain": "unrestricted",
-        "timeslots": [
-          {
-            "start": {
-              "dateTime": start,
-              "timeZone": "Eastern Standard Time"
-            },
-            "end": {
-              "dateTime": end,
-              "timeZone": "Eastern Standard Time"
-            }
-          }
-        ]
+        "timeslots": timeslots
       },
       "meetingDuration": meetingDuration,
       "returnSuggestionReasons": returnSuggestionReasons,
       maxCandidates: 6
-    }
+    };
   }
-  private getNewAttendee(address:string, required:boolean=true){
+  private getNewAttendee(address: string, required: boolean = true) {
     return {
-      "type": required ? "required" : "optional",  
+      "type": required ? "required" : "optional",
       "emailAddress": {
         "address": address
       }
-    }
+    };
   }
   private getMeetingDuration() {
     return EventsApi.Durations[this.state.duration].key;
   }
   private getDate(key: string) {
-    return moment(this.state[key]).format('YYYY-MM-DDThh:mm:ss');
+    return moment(this.state[key]);
+  }
+  private onSelectUser = (user: any[]): void => {
+    this.setState(prevState => {
+      prevState.attendees = user;
+      return {
+        ...prevState
+      };
+    });
   }
 }

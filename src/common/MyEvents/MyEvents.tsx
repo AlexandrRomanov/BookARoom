@@ -7,8 +7,8 @@ export class MyEvents extends React.Component<IMyEventsProps, {}> {
     public render(): JSX.Element {
         return <div>{!this.props.events? null : this.props.events.map((item: IMeeting): JSX.Element => {
             return <CalendarEvent item={item} 
-                                    editItem={(item)=>{ this.props.editItem(item); }} 
-                                    viewItem={(item)=>{ this.props.viewItem(item); }} 
+                                    editItem={(_item)=>{ this.props.editItem(_item); }} 
+                                    viewItem={(_item)=>{ this.props.viewItem(_item); }} 
                     />;
             })}</div>;
     }

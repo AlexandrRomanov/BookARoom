@@ -8,18 +8,36 @@ import { IMeeting, IUser } from "../../common/CalendarEvent/IMeeting";
 import { IRoomItem } from "../../common/RoomItem/IRoomItem";
 import { IAttendees } from "./IAttendees";
 const axios = require('axios');
+const $ = require("jquery");
 
 
 
 
 export class EventsApi {
-    rooms: any[] = null;
-    myInfo: any = null;
-    context: WebPartContext;
-    httpClient: HttpClient;
+    private findMeetingTimesUrl(currentUserEmail:string) { return 'https://graph.microsoft.com/v1.0/me/findMeetingTimes'; }
+    private getUserInfoUrl(email:string) { return `https://graph.microsoft.com/v1.0/users/${email}/`; }
+    private getCalendarviewUrl(email:string, timestring:string) { return `https://graph.microsoft.com/v1.0/users/${email}/calendarview${timestring}`; }
+    private getCalendarviewUrl2(currentUserEmail:string) { return `https://graph.microsoft.com/v1.0/users/${currentUserEmail}/findMeetingTimes`; }
+    private urls = {
+        editEvent: 'https://graph.microsoft.com/v1.0/me/calendar/events/',
+        addEvent: 'https://graph.microsoft.com/v1.0/me/calendar/events',
+        calendarview: 'https://graph.microsoft.com/v1.0/me/calendarview',
+        DHCFRooms: `https://graph.microsoft.com/beta/me/findRooms(RoomList='DHCFRooms@dcgovict.onmicrosoft.com')`,
+        myProfile: `https://graph.microsoft.com/v1.0/me/`,
+        findMeetingTimes: this.findMeetingTimesUrl,
+        getUserInfo: this.getUserInfoUrl,
+        getCalendarview: this.getCalendarviewUrl,
+
+        findMeetingTimes2: this.getCalendarviewUrl2,
+    };
+    private rooms: any[] = null;
+    private myInfo: any = null;
+    private context: WebPartContext;
+    private httpClient: HttpClient;
     constructor(context: WebPartContext) {
         this.context = context;
         this.httpClient = context.httpClient;
+        console.log(context.pageContext.user.email);
     }
 
     public static Durations = [
@@ -48,11 +66,11 @@ export class EventsApi {
             title: '2h 30m',
             time: 150
         }
-    ]
+    ];
     public static GetDurationsMarks() {
-        let result = {}
+        let result = {};
         EventsApi.Durations.forEach((element, index) => {
-            result[index] = element.title
+            result[index] = element.title;
         });
         return result;
     }
@@ -104,7 +122,7 @@ export class EventsApi {
                     LocationEmailAddress: event.location.key
                 },
                 attendees: attendees
-            }
+            };
             //console.log(data)
 
             if (event.id) {
@@ -116,8 +134,9 @@ export class EventsApi {
 
         });
     }
+
     private editEvent(event: IMeeting, data: IEvent, accessToken: string, resolve: (roms: any) => void, reject: (error: any) => void) {
-        let url = `https://graph.microsoft.com/v1.0/me/calendar/events/${event.originalId}`;
+        let url = `${this.urls.editEvent}${event.originalId}`;
         axios.patch(url, data, {
             headers: {
                 'Accept': 'application/json;odata.metadata=none',
@@ -133,8 +152,7 @@ export class EventsApi {
     }
 
     private addEvent(accessToken: string, data: IEvent, resolve: (roms: any) => void, reject: (error: any) => void) {
-        let url = 'https://graph.microsoft.com/v1.0/me/calendar/events';
-        this.httpClient.post(url, HttpClient.configurations.v1, {
+        this.httpClient.post(this.urls.addEvent, HttpClient.configurations.v1, {
             headers: {
                 'Accept': 'application/json;odata.metadata=none',
                 'Authorization': 'Bearer ' + accessToken,
@@ -156,18 +174,54 @@ export class EventsApi {
             });
     }
     public FindMeetingTimes(accessToken: string, roomsData: any[]) {
+        this.FindMeetingTimes2(roomsData).then(x=>{ console.log(x);});
         return new Promise<any>((resolve: (roms: any) => void, reject: (error: any) => void): void => {
-            Promise.all(roomsData.map((data: any) => { return this.findMeetingTimes(accessToken, data); }))
+            Promise.all(roomsData.map((room: any) => { return this.findMeetingTimes(accessToken, room, this.urls.findMeetingTimes(this.context.pageContext.user.email)); }))
                 .then((result: any[]) => {
                     resolve(result);
                 });
 
         });
     }
-
-    private findMeetingTimes(accessToken: string, data: any): Promise<any> {
+    public FindMeetingTimes2(roomsData: any[]) {
+        return new Promise<any>((resolve: (roms: any) => void, reject: (error: any) => void): void => {
+            this.test().then(t => {
+                Promise.all(roomsData.map((data: any) => { return this.findMeetingTimes(t, data, this.urls.findMeetingTimes2(this.context.pageContext.user.email)); }))
+                    .then((result: any[]) => {
+                        resolve(result);
+                    });
+            });
+        });
+    }
+    private test(): Promise<string> {
         return new Promise((resolve, reject) => {
-            let url = 'https://graph.microsoft.com/v1.0/me/findMeetingTimes';
+            let that = this;
+            $.ajax({
+                "async": true,
+                "crossDomain": true,
+                "url": "https://cors-anywhere.herokuapp.com/https://login.windows.net/dc.gov/oauth2/v2.0/token",
+                "type": "POST",
+                "headers": {
+                    "content-type": "application/x-www-form-urlencoded"
+                },
+                "data": {
+                    "grant_type": "client_credentials",
+                    "client_id": "e2a27625-d8aa-488b-a9e3-90be0a2e0268",
+                    "client_secret": "u1[Vy2GJ!4]tC!nSIBHo%B0]",
+                    "scope": "https://graph.microsoft.com/.default"
+                },
+                success: function (response) {
+                    console.log(response);
+                    resolve(response.access_token);
+                }
+
+            });
+
+        });
+    }
+
+    private findMeetingTimes(accessToken: string, room: any, url:string): Promise<any> {
+        return new Promise((resolve, reject) => {
             this.httpClient.post(url, HttpClient.configurations.v1, {
                 headers: {
                     'Accept': 'application/json;odata.metadata=none',
@@ -175,7 +229,7 @@ export class EventsApi {
                     'Content-Type': 'application/json',
                     'Prefer': 'outlook.timezone="Eastern Standard Time"'
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify(room.data)
             })
                 .then((response: HttpClientResponse): Promise<{
                     value: any;
@@ -185,17 +239,20 @@ export class EventsApi {
                 .then((result: {
                     value: any;
                 }): void => {
-                    resolve(result);
+                    resolve({
+                        location:room.location,
+                        result:result
+                    });
                 }, (error: any): void => {
                     reject(error);
                 });
-        })
+        });
     }
-    public GetDashboardData(accessToken: string, date: moment.Moment): Promise<{ rooms: IRoomItem[], lokations: any[], MyEvents: IMeeting[] }> {
+    public GetDashboardData(accessToken: string, date: moment.Moment): Promise<{ rooms: IRoomItem[], lokations: any[], myEvents: IMeeting[] }> {
         return new Promise<any>((resolve, reject): void => {
             var _timestring = this.applyDate(date);
             Promise.all([
-                this.getEvents(accessToken, `https://graph.microsoft.com/v1.0/me/calendarview${_timestring}`),
+                this.getEvents(accessToken, `${this.urls.calendarview}${_timestring}`),
                 this.getAllEvents(accessToken, _timestring),
                 this.getMyProfile(accessToken)]).then((value) => {
                     let MyEvents: IMeeting[] = value["0"];
@@ -227,17 +284,17 @@ export class EventsApi {
                     resolve({
                         rooms: rooms,
                         lokations: lokations,
-                        MyEvents: MyEvents
+                        myEvents: MyEvents
                     });
                 },
                     _ => {
                         reject(_);
-                    })
+                    });
         });
     }
     private getAllEvents(accessToken: string, timestring: string) {
         const getEvents = file => new Promise((resolve, reject) => {
-            this.getEvents(accessToken, `https://graph.microsoft.com/v1.0/users/${file.address}/calendarview${timestring}`)
+            this.getEvents(accessToken, this.urls.getCalendarview(file.address, timestring))
                 .then((upcomingMeetings: IMeeting[]): void => {
                     upcomingMeetings.forEach((element: IMeeting) => {
                         let day = 'day' + element.start.getDay();
@@ -269,16 +326,17 @@ export class EventsApi {
                     });
             }, (error: any): void => {
                 reject(error);
-            })
+            });
         });
     }
+
     private getRooms(accessToken: string): Promise<IRoomItem[]> {
         return new Promise<any>((resolve, reject): void => {
             if (!!this.rooms) {
                 resolve(JSON.parse(JSON.stringify(this.rooms)));
             }
             else {
-                this.httpClient.get(`https://graph.microsoft.com/beta/me/findRooms(RoomList='DHCFRooms@dcgovict.onmicrosoft.com')`, HttpClient.configurations.v1, {
+                this.httpClient.get(this.urls.DHCFRooms, HttpClient.configurations.v1, {
                     headers: {
                         'Accept': 'application/json;odata.metadata=none',
                         'Authorization': 'Bearer ' + accessToken
@@ -291,19 +349,19 @@ export class EventsApi {
                         this.rooms = [];
                         if (todayMeetings && todayMeetings.value)
                             this.rooms = todayMeetings.value;
-                        resolve(JSON.parse(JSON.stringify(this.rooms)))
+                        resolve(JSON.parse(JSON.stringify(this.rooms)));
                     }, (error: any): void => {
                         reject(error);
                     });
             }
-        })
+        });
     }
     private getMyProfile(accessToken: string): Promise<any> {
         return new Promise<any>((resolve, reject): void => {
             if (!!this.myInfo)
                 resolve(this.myInfo);
             else {
-                this.httpClient.get(`https://graph.microsoft.com/v1.0/me/`, HttpClient.configurations.v1, {
+                this.httpClient.get(this.urls.myProfile, HttpClient.configurations.v1, {
                     headers: {
                         'Accept': 'application/json;odata.metadata=none',
                         'Authorization': 'Bearer ' + accessToken
@@ -350,7 +408,7 @@ export class EventsApi {
         let thisDate = date.clone();
         let starttime = thisDate.startOf('isoWeek').format('YYYY-MM-DD') + 'T04:00:00.000Z';
         let endtime = thisDate.endOf('isoWeek').format('YYYY-MM-DD') + 'T03:59:59.000Z';
-        console.log(`?startdatetime=${starttime}&enddatetime=${endtime}`)
+        console.log(`?startdatetime=${starttime}&enddatetime=${endtime}`);
         return `?startdatetime=${starttime}&enddatetime=${endtime}`;
     }
     private getMeeting(event: IEvent): IMeeting {
@@ -389,7 +447,7 @@ export class EventsApi {
                     result.push({
                         primaryText: element.emailAddress.name,
                         Email: element.emailAddress.address
-                    })
+                    });
             });
         }
         return result;
@@ -405,7 +463,7 @@ export class EventsApi {
                             name: element.primaryText ? element.primaryText : ''
                         },
                         type: "required"
-                    })
+                    });
             });
         }
         return result;
@@ -420,10 +478,10 @@ export class EventsApi {
                 organizer: result[0],
                 attendees: result[1]
             };
-        })
+        });
     }
     private geuUser(value: string) {
-        let result: any = {}
+        let result: any = {};
         value = value ? value.replace('>', '') : '';
         let split = value.split('<');
         result.Email = split.length > 1 ? split[1].trim() : value.trim();
@@ -433,16 +491,17 @@ export class EventsApi {
     private getAllattendees(accessToken: string, attendees: any[]) {
         return new Promise<any>((resolve: (roms: any) => void, reject: (error: any) => void): void => {
             Promise.all(attendees.map((item) => {
-                return this.getUserInfo(accessToken, item)
+                return this.getUserInfo(accessToken, item);
             })).then((result: any[]) => {
                 resolve(result);
             });
 
         });
     }
+
     private getUserInfo(accessToken: string, user: any): Promise<any> {
         return new Promise<any>((resolve: (meetings: any) => void): void => {
-            this.httpClient.get(`https://graph.microsoft.com/v1.0/users/${user.Email}/`, HttpClient.configurations.v1, {
+            this.httpClient.get(this.urls.getUserInfo(user.Email), HttpClient.configurations.v1, {
                 headers: {
                     'Accept': 'application/json;odata.metadata=none',
                     'Authorization': 'Bearer ' + accessToken
@@ -456,7 +515,7 @@ export class EventsApi {
                         external: true,
                         mail: user.Email,
                         displayName: user.primaryText
-                    })
+                    });
                 }
                 else
                     resolve(result);
@@ -466,9 +525,19 @@ export class EventsApi {
                     external: true,
                     mail: user.Email,
                     displayName: user.primaryText
-                })
+                });
             });
         });
     }
-
+    public static CheckArray(arr: any) {
+        return !!arr && arr.length;
+    }
+    public static ToDate(date:any) {
+        if(!date)
+            return null;
+        let result = new Date(date);
+        if(result.toString()=="Invalid Date")
+            return null;
+        return result;
+    }
 }

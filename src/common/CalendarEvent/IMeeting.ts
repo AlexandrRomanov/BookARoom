@@ -17,11 +17,11 @@ export interface IMeeting {
     organizer?: string;
     status?: string;
     event?:IEvent;
-    isOwner?:boolean
-    attendees:IUser[]
+    isOwner?:boolean;
+    attendees:IUser[];
   }
 
   export interface IUser{
-    primaryText:string
-    Email: string
+    primaryText:string;
+    Email: string;
 }

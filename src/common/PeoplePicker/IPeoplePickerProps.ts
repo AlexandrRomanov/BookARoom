@@ -6,5 +6,5 @@ export interface IPeoplePickerProps {
     label: string;
     defaultSelectedPeople: any;
     itemLimit?: number;
-    context:WebPartContext
+    context:WebPartContext;
 }

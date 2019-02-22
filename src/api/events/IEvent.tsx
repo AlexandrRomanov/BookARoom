@@ -7,22 +7,22 @@ export interface IEvent{
     isAllDay?: boolean;
     showAs?: string;
     body:{
-        contentType:string
-        content:string
-    }
+        contentType:string;
+        content:string;
+    };
     start:{
-        dateTime:string
-        timeZone:string
-    }
+        dateTime:string;
+        timeZone:string;
+    };
     end:{
-        dateTime:string
-        timeZone:string
-    }
+        dateTime:string;
+        timeZone:string;
+    };
     location:{
-        displayName:string
-        LocationEmailAddress:string
-    }
-    attendees?: IAttendees[]
+        displayName:string;
+        LocationEmailAddress:string;
+    };
+    attendees?: IAttendees[];
     organizer?: IAttendees;
     
 }
