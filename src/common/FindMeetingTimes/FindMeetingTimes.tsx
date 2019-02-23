@@ -8,12 +8,15 @@ import { Dropdown } from 'office-ui-fabric-react';
 import { PeoplePicker } from '../PeoplePicker';
 import { WebPartContext } from '@microsoft/sp-webpart-base';
 import { IFindMeetingTimesProps } from './IFindMeetingTimesProps';
-import { IFindMeetingTimesState } from './IFindMeetingTimesState';
+import { IFindMeetingTimesState, SubmitType } from './IFindMeetingTimesState';
 import styles from './FindMeetingTimes.module.scss';
 import { EventsApi } from '../../api/events/api';
 import Slider from 'rc-slider';
 import * as moment from 'moment';
 import { FindItem } from './FindItem/FindItem';
+import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
+import { IMeeting } from '../CalendarEvent/IMeeting';
+
 
 export class FindMeetingTimes extends React.Component<IFindMeetingTimesProps, IFindMeetingTimesState> {
   private _context: WebPartContext;
@@ -21,54 +24,56 @@ export class FindMeetingTimes extends React.Component<IFindMeetingTimesProps, IF
   constructor(props: IFindMeetingTimesProps) {
     super(props);
     this._context = props.context;
-    let lokations = [...props.lokations];
-    lokations.splice(0, 0, { key: '', title: 'All Rooms' });
     this.eventsApi = new EventsApi(props.context);
-    this.state = {
+    this.state = this.getNewState();
+  }
+  private getNewState() {
+    let date = new Date();
+    date.setHours(9);
+    date.setMinutes(0);
+    let startTime = new Date(date.valueOf());
+    let endTime = new Date(date.valueOf());
+    endTime.setHours(18);
+    let launchStartTime = new Date(date.valueOf());
+    launchStartTime.setHours(12);
+    let launchEndTime = new Date(date.valueOf());
+    launchEndTime.setHours(13);
+    return {
       attendees: [],
-      lokations: lokations,
-      location: lokations[0],
-      start: null,
-      end: null,
-      duration: null,
+      location: [],
+      start: date,
+      end: moment(date).add(14, 'days').toDate(),
+      duration: 0,
       id: null,
       emptySuggestionsReason: null,
       loading: false,
       findResult: [],
       selectedItem: null,
+      startTime: startTime,
+      endTime: endTime,
+      launchStartTime: launchStartTime,
+      launchEndTime: launchEndTime,
+      showWorkingHours: false,
+      excludeLaunchTime: true,
+      showAllResults: false,
+      submitType: SubmitType.Find,
+      subject: null,
     };
   }
-
   private save;
-  public componentWillReceiveProps(nextProps) {
-    // You don't have to do this check first, but it can help prevent an unneeded render
-    if (!!nextProps.event && nextProps.event.id !== this.state.id) {
-      this.setState(prevState => {
-        prevState.findResult = [];
-        prevState.id = nextProps.event.id;
-        prevState.duration = nextProps.event.duration;
-        let key = nextProps.event.location.key ? nextProps.event.location.key : "";
-        let locations = this.state.lokations.filter(x => x.key == key);
-        prevState.location = locations.length ? locations[0] : this.state.lokations[0];
-        prevState.attendees = nextProps.event.attendees;
-        if (nextProps.event.startDate) {
-          prevState.start = nextProps.event.startDate;
-          let date = new Date(nextProps.event.startDate);
-          date.setHours(18);
-          date.setMinutes(0);
-          prevState.end = date;
-        }
-        else {
-          let date = new Date();
-          date.setHours(9);
-          date.setMinutes(0);
-          prevState.start = date;
-          prevState.end = moment(date).add(14, 'days').toDate();
-        }
-        return prevState;
-      });
+  public componentWillReceiveProps(nextProps: IFindMeetingTimesProps) {
+    if (!nextProps.hidden && this.props.hidden) {
+      this.setState(this.getNewState());
     }
   }
+  /* public componentWillReceiveProps(nextProps: IFindMeetingTimesProps) {
+     if (nextProps.locations.length && !this.state.locations.length) {
+       let locations = [...nextProps.locations];
+       locations.splice(0, 0, { key: "", title: "All Rooms" });
+       this.setState({ locations: locations });
+     }
+ 
+   }*/
   private test(item: any) {
     this.setState((prevState) => {
       prevState.selectedItem = item;
@@ -82,78 +87,172 @@ export class FindMeetingTimes extends React.Component<IFindMeetingTimesProps, IF
     this.save = this.props.onSave;
     const loading: JSX.Element = this.state.loading ? <div style={{ margin: '0 auto', width: '7em' }}><div className={styles.spinner}><div className={`${styles.spinnerCircle} ${styles.spinnerNormal}`}></div><div className={styles.spinnerLabel}>Loading...</div></div></div> : <div />;
     const findResult: JSX.Element = EventsApi.CheckArray(this.state.findResult) ? <div className="ms-Grid-row">{
-      this.state.findResult.map((item: any): JSX.Element => {
-        return <FindItem className={!!this.state.selectedItem && this.state.selectedItem.ID == item.ID ? 'selected' : ''} onClick={() => { this.test(item); }} item={item}></FindItem>;
+      this.state.findResult.map((item: any, index: number): JSX.Element => {
+        return <FindItem
+          className={!!this.state.selectedItem && this.state.selectedItem.ID == item.ID ? 'selected' : ''}
+          onClick={() => { this.test(item); }}
+          item={item}
+          hidden={!this.state.showAllResults && index > 5}
+        ></FindItem>;
       })
     }</div> : <div />;
     return (
       (<Dialog
         hidden={hidden}
         onDismiss={onClose}
-        className={styles.FindMeetingTimes}
         dialogContentProps={{
           type: DialogType.normal,
           title: 'Meeting Assistant',
         }}
         modalProps={{
+          className:styles.FindMeetingTimes,
           titleAriaId: 'myLabelId',
           subtitleAriaId: 'mySubTextId',
           isBlocking: false,
           containerClassName: 'ms-dialogMainOverride'
         }}
       >
-        <ValidatorForm onSubmit={this._find} >
-          <PeoplePicker
-            label="Attendees"
-            defaultSelectedPeople={this.state.attendees}
-            selectPeople={this.onSelectUser}
-            itemLimit={30}
-            context={this._context}
-          />
-          <Dropdown
-            id="location"
-            label="Location"
-            // multiSelect={true}
-            selectedKey={this.state.location.key}
-            onChanged={this.handleChangeValue('location')}
-            options={this.state.lokations}
-            onRenderTitle={(item: any) => <span> {item[0].title}</span>}
-            onRenderOption={this.renderCategory}
-          />
+        <ValidatorForm onSubmit={this.onSubmit} >
           <div className="ms-Grid-row">
-            <div className="ms-Grid-col ms-sm6">
-              <DatePickerValidator
-                label="Start Date"
-                name="start"
-                allowTextInput={true}
-                firstDayOfWeek={DayOfWeek.Sunday}
-                value={this.state.start}
-                isMonthPickerVisible={false}
-                onSelectDate={(newDate) =>
-                  this.setState(prevState => {
-                    prevState.start = newDate;
-                  }
-                  )}
+            <div className={["ms-Grid-col", "ms-sm6", styles.Location].join(" ")}>
+              <TextFieldValidator
+                id="subject"
+                name='subject'
+                label="Title"
+                maxLength={80}
+                value={this.state.subject}
+                onChanged={this.handleChangeSubject()}
+                validators={this.state.submitType == SubmitType.Save ? ['required'] : null}
                 errorMessages={['this field is required']}
               />
+              <Dropdown
+                id="location"
+                label="Location"
+                multiSelect
+                onChanged={this.handleChangeValue()}
+                options={this.props.locations}
+                onRenderTitle={(items: any[]) => this.onRenderTitle(items)}
+                onRenderOption={this.onRenderOption}
+              />
+              <div className="ms-Grid-row">
+                <div className="ms-Grid-col ms-sm6">
+                  <DatePickerValidator
+                    label="Start Date"
+                    name="start"
+                    allowTextInput={true}
+                    firstDayOfWeek={DayOfWeek.Sunday}
+                    value={this.state.start}
+                    isMonthPickerVisible={false}
+                    onSelectDate={(newDate) =>
+                      this.setState(prevState => {
+                        prevState.start = newDate;
+                      }
+                      )}
+                    errorMessages={['this field is required']}
+                  />
+                </div>
+                <div className="ms-Grid-col ms-sm6">
+                  <DatePickerValidator
+                    label="End Date"
+                    name="end"
+                    allowTextInput={true}
+                    firstDayOfWeek={DayOfWeek.Sunday}
+                    value={this.state.end}
+                    isMonthPickerVisible={false}
+                    onSelectDate={(newDate) =>
+                      this.setState(prevState => {
+                        prevState.end = newDate;
+                      }
+                      )}
+                    errorMessages={['this field is required']}
+                  />
+                </div>
+              </div>
+              <div className="ms-Grid-row">
+                <div className={["ms-Grid-col", "ms-sm12", styles.margin, styles.pointer].join(" ")} onClick={() => {
+                  this.setState(prevState => prevState.showWorkingHours = !prevState.showWorkingHours);
+                }}>
+                  {this.state.showWorkingHours ? "Hide working hours" : "Show working hours"}
+                </div>
+              </div>
+              {!this.state.showWorkingHours ? null :
+                <div>
+                  <div className={["ms-Grid-row", styles.margin].join(" ")}>
+                    <div className={["ms-Grid-col", "ms-sm1", styles.to].join(" ")}>
+                      From
+                </div>
+                    <div className="ms-Grid-col ms-sm5">
+                      <TimePicker
+                        label={null}
+                        date={this.state.startTime}
+                        onChanged={(date) => { this.setState(prevState => prevState.startTime = date); }}>
+                      </TimePicker>
+                    </div>
+                    <div className={["ms-Grid-col", "ms-sm1", styles.to].join(" ")}>
+                      To
+                </div>
+                    <div className="ms-Grid-col ms-sm5">
+                      <TimePicker
+                        label={null}
+                        date={this.state.endTime}
+                        onChanged={(date) => { this.setState(prevState => prevState.endTime = date); }}>
+                      </TimePicker>
+                    </div>
+                  </div>
+                  <div className={["ms-Grid-row", styles.margin].join(" ")}>
+                    <div className="ms-Grid-col ms-sm2">
+                      <Toggle
+                        checked={this.state.excludeLaunchTime}
+                        onChanged={(checked: boolean) => {
+                          this.setState({ excludeLaunchTime: !!checked });
+                        }}
+                      />
+                    </div>
+                    <div className={["ms-Grid-col", "ms-sm10", styles.excludeLaunchTime].join(" ")}>
+                      Exclude launch time
+                </div>
+                  </div>
+                  {!this.state.excludeLaunchTime ? null :
+                    <div className="ms-Grid-row">
+                      <div className={["ms-Grid-col", "ms-sm1", styles.to].join(" ")}>
+                        From
+                  </div>
+                      <div className="ms-Grid-col ms-sm5">
+                        <TimePicker
+                          label={null}
+                          date={this.state.launchStartTime}
+                          onChanged={(date) => { this.setState(prevState => prevState.launchStartTime = date); }}>
+                        </TimePicker>
+                      </div>
+                      <div className={["ms-Grid-col", "ms-sm1", styles.to].join(" ")}>
+                        To
+                  </div>
+                      <div className="ms-Grid-col ms-sm5">
+                        <TimePicker
+                          label={null}
+                          date={this.state.launchEndTime}
+                          onChanged={(date) => { this.setState(prevState => prevState.launchEndTime = date); }}>
+                        </TimePicker>
+                      </div>
+                    </div>
+                  }
+
+
+                </div>
+              }
             </div>
             <div className="ms-Grid-col ms-sm6">
-              <DatePickerValidator
-                label="End Date"
-                name="end"
-                allowTextInput={true}
-                firstDayOfWeek={DayOfWeek.Sunday}
-                value={this.state.end}
-                isMonthPickerVisible={false}
-                onSelectDate={(newDate) =>
-                  this.setState(prevState => {
-                    prevState.end = newDate;
-                  }
-                  )}
-                errorMessages={['this field is required']}
+              <PeoplePicker
+                label="Attendees"
+                defaultSelectedPeople={this.state.attendees}
+                selectPeople={this.onSelectUser}
+                itemLimit={30}
+                context={this._context}
               />
             </div>
           </div>
+
+
           <div className={styles.SliderDiv} >
             <p>Duration</p>
             <div className={styles.Slider}>
@@ -166,26 +265,44 @@ export class FindMeetingTimes extends React.Component<IFindMeetingTimesProps, IF
           </div>
           {loading}
           {findResult}
+          {this.state.findResult.length <= 6 ? null :
+            <div className="ms-Grid-row">
+              <div className={["ms-Grid-col", "ms-sm12", styles.margin, styles.alignRight, styles.pointer].join(" ")} onClick={() => {
+                this.setState(prevState => prevState.showAllResults = !prevState.showAllResults);
+              }}>
+                {this.state.showAllResults ? "Hide Results" : "Show All Results"}
+              </div>
+            </div>
+          }
           <DialogFooter>
-            {this.state.selectedItem ? <PrimaryButton onClick={() => { this.onSave(); }} text="Save" /> : null}
-            <PrimaryButton type="submit" text="Find" />
+            {this.state.selectedItem ? <PrimaryButton type="submit" onClick={() => this.setState(prevState => prevState.submitType = SubmitType.Save)} text="Save" /> : null}
+            <PrimaryButton type="submit" onClick={() => this.setState(prevState => prevState.submitType = SubmitType.Find)} text="Find" />
             <DefaultButton onClick={onClose} text="Cancel" />
           </DialogFooter>
         </ValidatorForm>
+
       </Dialog>)
     );
   }
-  private onSave() {
-    console.log(this.state.selectedItem,this.state.selectedItem)
-  }
-  private handleChangeValue = name => value => {
-    //debugger
-    this.setState((prevState) =>
-      prevState[name] = value
+
+  private handleChangeValue = () => value => {
+    this.setState((prevState: IFindMeetingTimesState) => {
+      let index = prevState.location.indexOf(value.key);
+      if (value.selected && index == -1) {
+        prevState.location.push(value.key);
+      }
+      else if (!value.selected && index != -1) {
+        prevState.location.splice(index, 1);
+      }
+      return prevState;
+    }
     );
   }
 
-  public renderCategory = (category) => {
+  public onRenderTitle = (items: any[]): JSX.Element => {
+    return <span>{items.length ? items.map((item, index) => { return item.title + (index != items.length - 1 ? ", " : ''); }) : null}</span>;
+  }
+  public onRenderOption = (category) => {
     return category.title;
   }
   private index = 0;
@@ -211,10 +328,29 @@ export class FindMeetingTimes extends React.Component<IFindMeetingTimesProps, IF
     }
 
   }
+  private onSubmit = (): void => {
+    if (this.state.submitType == SubmitType.Find)
+      this._find();
+    else
+      this._save();
+  }
+  private _save = (): void => {
+    let meeting: IMeeting = {
+      start: this.state.selectedItem.Start.toDate(),
+      end: this.state.selectedItem.Start.toDate(),
+      attendees: this.state.attendees,
+      subject: this.state.subject,
+      location: this.state.selectedItem.room,
+      duration: this.state.duration,
+    };
+    if (!!this.props.onSave)
+      this.props.onSave(meeting);
+  }
   private _find = (): void => {
     this.setState((prevState: IFindMeetingTimesState): IFindMeetingTimesState => {
       prevState.loading = true;
       prevState.findResult = [];
+      prevState.selectedItem = null;
       return prevState;
     });
     let roomsData = this.getRoomsData();
@@ -235,24 +371,11 @@ export class FindMeetingTimes extends React.Component<IFindMeetingTimesProps, IF
           }
         });
       arr = arr.sort((a, b) => { return a.Start - b.Start; });
-      console.log(arr);
       this.setState((prevState: IFindMeetingTimesState): IFindMeetingTimesState => {
         prevState.findResult = arr;
         return prevState;
       });
-      /*this.setState(prevState => {
-        if (!!res.meetingTimeSuggestions && !!res.meetingTimeSuggestions.length) {
-          prevState.result = res.meetingTimeSuggestions;
-          prevState.emptySuggestionsReason = null;
-        }
-        else {
-          prevState.result = [];
-          prevState.emptySuggestionsReason = res.emptySuggestionsReason;
-        }
-        return prevState;
-      });*/
     });
-    // this.save({});
   }
   private getRoomsData() {
     let start = this.getDate('start');
@@ -260,20 +383,15 @@ export class FindMeetingTimes extends React.Component<IFindMeetingTimesProps, IF
     let meetingDuration = this.getMeetingDuration();
     let timeslots = this.getTimeslots(start, end);
     let result = [];
-    if (this.state.location.key)
-      result.push({
-        location: this.state.location,
-        data: this.getNewMeetingTimesData(timeslots, meetingDuration, this.getAttendees(this.state.location.key))
-      });
-    else {
-      this.state.lokations.forEach(element => {
-        if (!!element.key)
-          result.push({
-            location: element,
-            data: this.getNewMeetingTimesData(timeslots, meetingDuration, this.getAttendees(element.key))
-          });
-      });
-    }
+
+    this.props.locations.forEach(element => {
+      if (this.state.location.indexOf(element.key) > -1)
+        result.push({
+          location: element,
+          data: this.getNewMeetingTimesData(timeslots, meetingDuration, this.getAttendees(element.key))
+        });
+    });
+
 
 
     return result;
@@ -290,6 +408,27 @@ export class FindMeetingTimes extends React.Component<IFindMeetingTimesProps, IF
     }
     return result;
   }
+  private getWorkPeriods() {
+    let result = [];
+    if (this.state.excludeLaunchTime) {
+      result.push({
+        start: { hour: this.state.startTime.getHours(), minute: this.state.startTime.getMinutes(), second: 0, millisecond: 0 },
+        end: { hour: this.state.launchStartTime.getHours(), minute: this.state.launchStartTime.getMinutes(), second: 0, millisecond: 0 }
+      });
+      result.push({
+        start: { hour: this.state.launchEndTime.getHours(), minute: this.state.launchEndTime.getMinutes(), second: 0, millisecond: 0 },
+        end: { hour: this.state.endTime.getHours(), minute: this.state.endTime.getMinutes(), second: 0, millisecond: 0 }
+      });
+    }
+    else {
+      result.push({
+        start: { hour: this.state.startTime.getHours(), minute: this.state.startTime.getMinutes(), second: 0, millisecond: 0 },
+        end: { hour: this.state.endTime.getHours(), minute: this.state.endTime.getMinutes(), second: 0, millisecond: 0 }
+      });
+    }
+    return result;
+  }
+
   private getTimeslots(start: moment.Moment, end: moment.Moment) {
     let result = [];
     let daysCount = Math.round(moment(end.diff(start)).toDate().valueOf() / 86400000) + 1;
@@ -298,25 +437,37 @@ export class FindMeetingTimes extends React.Component<IFindMeetingTimesProps, IF
       _start.add(id, 'days');
       let weekday = _start.weekday();
       if (weekday != 6 && weekday != 0) {
-        _start.set({ hour: 9, minute: 0, second: 0, millisecond: 0 });
-        let _end = _start.clone();
-        _end.set({ hour: 18, minute: 0, second: 0, millisecond: 0 });
-        console.log(_start.format('YYYY-MM-DDTHH:mm:SS'), _end.format('YYYY-MM-DDTHH:mm:SS'));
-        result.push({
-          "start": {
-            "dateTime": _start.format('YYYY-MM-DDTHH:mm:SS'),
-            "timeZone": "Eastern Standard Time"
-          },
-          "end": {
-            "dateTime": _end.format('YYYY-MM-DDTHH:mm:SS'),
-            "timeZone": "Eastern Standard Time"
-          }
+        this.getWorkPeriods().forEach(element => {
+          this.addTimeSlot(_start, result, element.start, element.end);
         });
+
       }
     }
 
     return result;
   }
+  private now = moment(new Date());
+  private addTimeSlot(start: moment.Moment, result: any[], startTime: moment.MomentSetObject, endTime: moment.MomentSetObject, ) {
+    let _start = start.clone();
+    _start.set(startTime);
+    let _end = _start.clone();
+    _end.set(endTime);
+    if (this.now > _end)
+      return;
+    if (this.now > _start)
+      _start = this.now.clone();
+    result.push({
+      "start": {
+        "dateTime": _start.format('YYYY-MM-DDTHH:mm:SS'),
+        "timeZone": "Eastern Standard Time"
+      },
+      "end": {
+        "dateTime": _end.format('YYYY-MM-DDTHH:mm:SS'),
+        "timeZone": "Eastern Standard Time"
+      }
+    });
+  }
+
   private getNewMeetingTimesData(timeslots: any[], meetingDuration: string, attendees: any[] = [], maxCandidates: number = 6, returnSuggestionReasons: boolean = true) {
     return {
       "attendees": attendees,
@@ -350,5 +501,10 @@ export class FindMeetingTimes extends React.Component<IFindMeetingTimesProps, IF
         ...prevState
       };
     });
+  }
+  private handleChangeSubject = () => value => {
+    this.setState((prevState: IFindMeetingTimesState) =>
+      prevState.subject = value
+    );
   }
 }

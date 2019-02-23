@@ -43,7 +43,7 @@ export class Calendar extends React.Component<ICalendarProps, {}> {
             viewItem={this.props.viewItem}
             date = {this.props.date}
             dayofWeek = {props.column.dayNumber} 
-            lokation = {props.original.address}
+            location = {props.original.address}
             ></CalendarCell>;
   }
 }

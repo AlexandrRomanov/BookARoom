@@ -37,7 +37,6 @@ export class EventsApi {
     constructor(context: WebPartContext) {
         this.context = context;
         this.httpClient = context.httpClient;
-        console.log(context.pageContext.user.email);
     }
 
     public static Durations = [
@@ -123,8 +122,8 @@ export class EventsApi {
                 },
                 attendees: attendees
             };
-            //console.log(data)
-
+            //console.log(data);
+            
             if (event.id) {
                 this.editEvent(event, data, accessToken, resolve, reject);
             }
@@ -210,7 +209,7 @@ export class EventsApi {
                     "client_secret": "u1[Vy2GJ!4]tC!nSIBHo%B0]",
                     "scope": "https://graph.microsoft.com/.default"
                 },
-                success: function (response) {
+                success: (response) => {
                     console.log(response);
                     resolve(response.access_token);
                 }
@@ -248,7 +247,7 @@ export class EventsApi {
                 });
         });
     }
-    public GetDashboardData(accessToken: string, date: moment.Moment): Promise<{ rooms: IRoomItem[], lokations: any[], myEvents: IMeeting[] }> {
+    public GetDashboardData(accessToken: string, date: moment.Moment): Promise<{ rooms: IRoomItem[], locations: any[], myEvents: IMeeting[] }> {
         return new Promise<any>((resolve, reject): void => {
             var _timestring = this.applyDate(date);
             Promise.all([
@@ -257,7 +256,7 @@ export class EventsApi {
                 this.getMyProfile(accessToken)]).then((value) => {
                     let MyEvents: IMeeting[] = value["0"];
                     let rooms: any[] = value["1"].rooms;
-                    let lokations: any[] = value["1"].lokations;
+                    let locations: any[] = value["1"].locations;
                     let myInfo: any = value["2"];
                     MyEvents.forEach(element => {
                         if (!!element.event && !!element.event.organizer && element.event.organizer.emailAddress &&
@@ -283,7 +282,7 @@ export class EventsApi {
                     });
                     resolve({
                         rooms: rooms,
-                        lokations: lokations,
+                        locations: locations,
                         myEvents: MyEvents
                     });
                 },
@@ -313,15 +312,15 @@ export class EventsApi {
         return new Promise<any>((resolve: (roms: any) => void, reject: (error: any) => void): void => {
             this.getRooms(accessToken).then(rooms => {
                 Promise.all(rooms.map(getEvents))
-                    .then((rooms: any[]) => {
-                        let lokations = [];
-                        rooms.forEach(x => lokations.push({
+                    .then((results: any[]) => {
+                        let locations = [];
+                        results.forEach(x => locations.push({
                             key: x.address,
                             title: x.name
                         }));
                         resolve({
-                            rooms: rooms,
-                            lokations: lokations
+                            rooms: results,
+                            locations: locations
                         });
                     });
             }, (error: any): void => {
@@ -408,7 +407,6 @@ export class EventsApi {
         let thisDate = date.clone();
         let starttime = thisDate.startOf('isoWeek').format('YYYY-MM-DD') + 'T04:00:00.000Z';
         let endtime = thisDate.endOf('isoWeek').format('YYYY-MM-DD') + 'T03:59:59.000Z';
-        console.log(`?startdatetime=${starttime}&enddatetime=${endtime}`);
         return `?startdatetime=${starttime}&enddatetime=${endtime}`;
     }
     private getMeeting(event: IEvent): IMeeting {

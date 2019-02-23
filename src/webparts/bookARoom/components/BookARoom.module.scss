@@ -1,90 +1,4 @@
 $PropNameColor: "[theme: themePrimary]";
-.rbc-calendar{
-  height: 0;
-  min-height: 580px;    
-  /* flex: 1;
-  min-width: 620px; */
-}
-.hide-event {
-  display: none;
-}
-.category-filter button, .new-event-button {
-  margin-bottom: 5px;
-}
-.button-spliter {
-  font-size: 14px;
-  font-weight: 400;
-  color: #a6a6a6;
-  background: transparent;
-  position: relative;
-  top: -2px;
-  height: 40px;
-}
-.time-picker .ms-Overlay {
-  background: none;
-}
-.time-picker .ms-Dialog-topButton {
-  display: none;
-}
-.time-picker .ms-Dialog-title {
-  text-align: center;
-}
-.time-picker .ms-Dialog-main {
-  border: 1px solid #666666;    
-}
-.event-dialog .ms-Dialog-main {
-  width: 550px;
-  min-width: auto;
-  max-width: auto;
-}
-.time-picker button {
-  min-width: 20px;
-  width: 20px;
-  height: 20px;
-  margin-left: 0px;
-}
-.time-picker .time-picker-control {
-  background-color: #c5c5c5;    
-}
-.time-picker button.current-half,
-.time-picker button.current-hour,
-.time-picker button.current-minute {
-}
-.time-picker .ms-Dialog-inner {
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-@media screen and (max-width: 639px) {
-  .rbc-calendar .rbc-toolbar > .change-views {
-      display: none;
-  }
-  .rbc-calendar .rbc-toolbar > .change-views > button.isMonthView {
-      display: inline-block;
-      min-width: auto;
-  }
-  .rbc-calendar .rbc-toolbar .hideIfDayView {
-      display: none;
-  }
-  .rbc-time-view .rbc-event-content.ms-hiddenMdDown {
-      display: block!important;
-  }
-  .rbc-month-row {
-      flex: unset!important;
-  }
-  .rbc-calendar {
-      min-height: 220px;
-  }
-  .rbc-toolbar .rbc-toolbar-label {
-      padding: 0 5px;
-  }
-  .rbc-date-cell {
-      border-bottom: 1px solid #ddd;
-  }
-  .time-picker .ms-Dialog-main {
-      width: auto;
-  }
-}
 .upcomingMeetings {
   margin-bottom: 50px;
   .webPartTitle {
@@ -334,5 +248,87 @@ $PropNameColor: "[theme: themePrimary]";
   }
   .SPPageChrome{
     overflow-y: hidden;
+  }
+  .rbc-calendar{
+    height: 0;
+    min-height: 580px;    
+    /* flex: 1;
+    min-width: 620px; */
+  }
+  .hide-event {
+    display: none;
+  }
+  .category-filter button, .new-event-button {
+    margin-bottom: 5px;
+  }
+  .button-spliter {
+    font-size: 14px;
+    font-weight: 400;
+    color: #a6a6a6;
+    background: transparent;
+    position: relative;
+    top: -2px;
+    height: 40px;
+  }
+  .time-picker .ms-Overlay {
+    background: none;
+  }
+  .time-picker .ms-Dialog-topButton {
+    display: none;
+  }
+  .time-picker .ms-Dialog-title {
+    text-align: center;
+  }
+  .time-picker .ms-Dialog-main {
+    border: 1px solid #666666;    
+  }
+  .event-dialog .ms-Dialog-main {
+    width: 550px;
+    min-width: auto;
+    max-width: auto;
+  }
+  .time-picker button {
+    min-width: 20px;
+    width: 20px;
+    height: 20px;
+    margin-left: 0px;
+  }
+  .time-picker .time-picker-control {
+    background-color: #c5c5c5;    
+  }
+  .time-picker .ms-Dialog-inner {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+  
+  @media screen and (max-width: 639px) {
+    .rbc-calendar .rbc-toolbar > .change-views {
+        display: none;
+    }
+    .rbc-calendar .rbc-toolbar > .change-views > button.isMonthView {
+        display: inline-block;
+        min-width: auto;
+    }
+    .rbc-calendar .rbc-toolbar .hideIfDayView {
+        display: none;
+    }
+    .rbc-time-view .rbc-event-content.ms-hiddenMdDown {
+        display: block!important;
+    }
+    .rbc-month-row {
+        flex: unset!important;
+    }
+    .rbc-calendar {
+        min-height: 220px;
+    }
+    .rbc-toolbar .rbc-toolbar-label {
+        padding: 0 5px;
+    }
+    .rbc-date-cell {
+        border-bottom: 1px solid #ddd;
+    }
+    .time-picker .ms-Dialog-main {
+        width: auto;
+    }
   }
 }

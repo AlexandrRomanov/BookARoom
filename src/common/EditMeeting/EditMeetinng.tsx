@@ -23,9 +23,7 @@ export class EditMeeting extends React.Component<IEditMeetingProps, IEditMeeting
     this._context = props.context;
     this.state = {
       meeting: !!this.props.meeting ? this.props.meeting : {},
-      HiddenFindMeetingTimes: true,
       startTime:null,
-      FindMeetingTimesEvent:null,
     };
   }
 
@@ -36,7 +34,7 @@ export class EditMeeting extends React.Component<IEditMeetingProps, IEditMeeting
       if (!nextProps.meeting.duration)
         nextProps.meeting.duration = 0;
       if (nextProps.meeting.location) {
-        nextProps.lokations.forEach(element => {
+        nextProps.locations.forEach(element => {
           if (element.key == nextProps.meeting.location.key || element.title == nextProps.meeting.location.title)
             location = element;
         });
@@ -61,12 +59,12 @@ export class EditMeeting extends React.Component<IEditMeetingProps, IEditMeeting
       (<Dialog
         hidden={hidden}
         onDismiss={onClose}
-        className={styles.EditMeeting}
         dialogContentProps={{
           type: DialogType.normal,
           title: this.state.meeting.id ? 'Edit Meeting' : 'New Meeting',
         }}
         modalProps={{
+          className:styles.EditMeeting,
           titleAriaId: 'myLabelId',
           subtitleAriaId: 'mySubTextId',
           isBlocking: false,
@@ -92,7 +90,7 @@ export class EditMeeting extends React.Component<IEditMeetingProps, IEditMeeting
                   label="Location"
                   selectedKey={this.state.meeting.location.key}
                   onChanged={this.handleChangeTitle('location')}
-                  options={this.props.lokations}
+                  options={this.props.locations}
                   onRenderTitle={(item: any) => <span> {item[0].title}</span>}
                   onRenderOption={this.renderCategory}
                 />
@@ -134,9 +132,6 @@ export class EditMeeting extends React.Component<IEditMeetingProps, IEditMeeting
                     }} marks={EventsApi.GetDurationsMarks()} step={null} />
                   </div>
                 </div>
-                <div className={styles.SliderDiv}>
-                {<a href="#" onClick={() => { this.onFind(); }} >{this.state.meeting.location.key ? (this.state.startTime ? 'Check meeting location and time.' : 'Find meeting time.') : (this.state.startTime ? 'Find meeting location.' : 'Find meeting location and time.') }</a>}
-                </div>
               </div>
               <div className="ms-Grid-col ms-sm7">
                 <PeoplePicker
@@ -155,39 +150,10 @@ export class EditMeeting extends React.Component<IEditMeetingProps, IEditMeeting
             </DialogFooter>
           </ValidatorForm>
         </div>
-        <FindMeetingTimes
-          context={this._context}
-          onClose={() => { this._closeInfoDialog(); }}
-          onSave={() => { this._closeInfoDialog(); }}
-          hidden={this.state.HiddenFindMeetingTimes}
-          lokations={this.props.lokations}
-          token={this.props.token}
-          event={this.state.FindMeetingTimesEvent}>
-
-        </FindMeetingTimes>
       </Dialog>)
     );
   }
-  private _closeInfoDialog = (): void => {
-    this.setState((prevState: IEditMeetingsState, props: IEditMeetingProps): IEditMeetingsState => {
-      prevState.HiddenFindMeetingTimes = true;
-      return prevState;
-    });
-  }
-  private onFind() {
-    this.setState((prevState: IEditMeetingsState, props: IEditMeetingProps): IEditMeetingsState => {
-      prevState.HiddenFindMeetingTimes = false;
-      prevState.FindMeetingTimesEvent = {
-        location:this.state.meeting.location,
-        startDate:this.state.startTime,
-        duration:this.state.meeting.duration,
-        attendees:this.state.meeting.attendees,
-        id:Math.random()
-      };
-      return prevState;
-    });
-  }
-
+  
   private onSelectUser = (user: any[]): void => {
     this.setState(prevState => {
       prevState.meeting.attendees = user;
@@ -217,6 +183,7 @@ export class EditMeeting extends React.Component<IEditMeetingProps, IEditMeeting
       this.state.meeting.start.setHours(date.getHours());
       this.state.meeting.start.setMinutes(date.getMinutes());
     }
+    
     this.save(this.state.meeting);
     /*  BookARoom.addEvent(this.state.token, this.props.httpClient, event)
       this.setState((prevState: IUpcomingMeetingsState, props: IUpcomingMeetingsProps): IUpcomingMeetingsState => {

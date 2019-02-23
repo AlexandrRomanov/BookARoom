@@ -8,5 +8,5 @@ export interface ICalendarCellProps {
     viewItem: (meeting:any) => void;
     date:moment.Moment;
     dayofWeek:number;
-    lokation:string;
+    location:string;
   }

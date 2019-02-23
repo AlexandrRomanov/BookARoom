@@ -74,4 +74,23 @@ $PropNameColor: "[theme: themePrimary]";
       text-align: center;
     }
   }
+  .Location{
+    max-width: 430px;
+  }
+  .to{
+    text-align: center;
+    line-height: 32px;
+  }
+  .excludeLaunchTime{
+    line-height: 32px;
+  }
+  .margin{
+    margin: 10px 0;
+  }
+  .alignRight{
+    text-align: right;
+  }
+  .pointer{
+    cursor: pointer;
+  }
 }

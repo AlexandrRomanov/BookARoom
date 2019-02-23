@@ -11,11 +11,12 @@ export interface IBookARoomState {
   token:string;
   meetinng:IMeeting;
   meetinngInfo:any;
-  lokations:any[];
+  locations:any[];
   date: moment.Moment;
   currentWeek:string;
   MyEvents:IMeeting[];
   start:boolean;
+  HiddenFindMeetingTimes:boolean;
 }
 
 

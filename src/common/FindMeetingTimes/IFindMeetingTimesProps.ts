@@ -5,7 +5,6 @@ export interface IFindMeetingTimesProps{
     hidden:boolean;
     onClose: () => void;
     onSave: (result:any) => void;
-    lokations:any[];
+    locations:any[];
     token:any;
-    event:any;
 }

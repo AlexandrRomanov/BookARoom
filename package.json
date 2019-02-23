@@ -21,6 +21,7 @@
     "@types/webpack-env": ">=1.12.1 <1.14.0",
     "axios": "^0.18.0",
     "jquery": "^2.2.4",
+    "loadsh": "0.0.3",
     "moment": "^2.24.0",
     "office-ui-fabric-react": "^5.135.0",
     "rc-slider": "^8.6.5",

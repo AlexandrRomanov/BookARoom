@@ -37,15 +37,13 @@ export class CalendarCell extends React.Component<ICalendarCellProps, ICalendarC
     private addEvent(that:any){
         let thisDate = that.props.date.clone();
         let date = thisDate.startOf('isoWeek').add(that.props.dayofWeek, 'days');
-        
-        console.log(that.props.lokation,that.props.dayofWeek,that.props.date);
         let tempId = "tempId-" + new Date().valueOf();
         let item = {
             id:tempId,
             start:date.toDate(),
             end:date.toDate(),
             location:{
-              key:that.props.lokation,
+              key:that.props.location,
               title:''
             },
             attendees:[]

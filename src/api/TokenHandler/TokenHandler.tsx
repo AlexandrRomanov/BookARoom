@@ -39,7 +39,7 @@ export class TokenHandler extends React.Component<ITokenHandlerProps, ITokenHand
     let that = this;
     this.requestToken();
     that.refreshToken(that);
-    setInterval(function() {  
+    setInterval(()=>{  
       that.refreshToken(that);
     }, 60000);
   }
@@ -83,7 +83,7 @@ export class TokenHandler extends React.Component<ITokenHandlerProps, ITokenHand
         let url = `${that.config.login_start_url}&client_id=${encodeURI(that.config.client_id)}&
                     scope=${encodeURI(that.config.scope)}&redirect_uri=${encodeURI(window.location.href)}`;
         let popUp = window.open(url, that.config.target);
-        let interval = setInterval(function() {   
+        let interval = setInterval(()=>{   
           if(/*!!popUp && !!popUp.location &&*/ !!popUp.location.href && popUp.location.href.indexOf(that.config.access_token)>-1){
             let split =popUp.location.href.split(that.config.access_token)[1].split("&");
             let token = split[0];
@@ -91,7 +91,7 @@ export class TokenHandler extends React.Component<ITokenHandlerProps, ITokenHand
             if(split.length>2 && !!split[2]){
               expires_in = parseInt(split[2].replace(that.config.expires_in,''))*1000;
             }
-            let expiresTokenDate = new Date(new Date().valueOf()+expires_in); 
+            expiresTokenDate = new Date(new Date().valueOf()+expires_in); 
             let storageValue :any = {
               token:token,
               expiresTokenDate:expiresTokenDate,

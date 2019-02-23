@@ -18,9 +18,9 @@
     "group": { "default": "Other" },
     "title": { "default": "Book a room" },
     "description": { "default": "Book a room description" },
-    "officeFabricIconFontName": "Page",
+    "officeFabricIconFontName": "Calendar",
     "properties": {
       "description": "Book a room"
-    }
+    },
   }]
 }
