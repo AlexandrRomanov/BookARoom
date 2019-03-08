@@ -172,6 +172,38 @@ export class EventsApi {
                 reject(error);
             });
     }
+
+    public FindUserTimes(accessToken: string, users: String[], request_time) {
+        return new Promise<any>((resolve, reject) => {
+                        
+            const data = {
+                schedules: users,
+                startTime: {
+                    dateTime: request_time.start,
+                    timeZone: "Pacific Standard Time"
+                },
+                endTime: {
+                    dateTime: request_time.end,
+                    timeZone: "Pacific Standard Time"
+                },
+                availabilityViewInterval: "60"
+            }
+            const _url = 'https://graph.microsoft.com/beta/me/calendar/getSchedule'
+            this.httpClient.post(_url, HttpClient.configurations.v1, {
+                headers: {
+                    'Accept': 'application/json;odata.metadata=none',
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Prefer': 'outlook.timezone="America/New_York"',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then((response: HttpClientResponse) => {
+                    resolve(response.json());
+                })
+        })
+    }
+
     public FindMeetingTimes(accessToken: string, roomsData: any[]) {
         this.FindMeetingTimes2(roomsData).then(x=>{ console.log(x);});
         return new Promise<any>((resolve: (roms: any) => void, reject: (error: any) => void): void => {

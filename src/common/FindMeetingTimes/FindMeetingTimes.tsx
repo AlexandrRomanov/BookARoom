@@ -16,6 +16,7 @@ import * as moment from 'moment';
 import { FindItem } from './FindItem/FindItem';
 import { Toggle } from 'office-ui-fabric-react/lib/Toggle';
 import { IMeeting } from '../CalendarEvent/IMeeting';
+import { TimeLine } from './TimeLine/TimeLine'
 
 
 export class FindMeetingTimes extends React.Component<IFindMeetingTimesProps, IFindMeetingTimesState> {
@@ -58,6 +59,7 @@ export class FindMeetingTimes extends React.Component<IFindMeetingTimesProps, IF
       showAllResults: false,
       submitType: SubmitType.Find,
       subject: null,
+      timeline: []
     };
   }
   private save;
@@ -274,6 +276,7 @@ export class FindMeetingTimes extends React.Component<IFindMeetingTimesProps, IF
               </div>
             </div>
           }
+          {this.state.timeline.length < 1 ? null : <TimeLine data={this.state.timeline}></TimeLine>}
           <DialogFooter>
             {this.state.selectedItem ? <PrimaryButton type="submit" onClick={() => this.setState(prevState => prevState.submitType = SubmitType.Save)} text="Save" /> : null}
             <PrimaryButton type="submit" onClick={() => this.setState(prevState => prevState.submitType = SubmitType.Find)} text="Find" />
@@ -372,11 +375,27 @@ export class FindMeetingTimes extends React.Component<IFindMeetingTimesProps, IF
         });
       arr = arr.sort((a, b) => { return a.Start - b.Start; });
       this.setState((prevState: IFindMeetingTimesState): IFindMeetingTimesState => {
-        prevState.findResult = arr;
-        return prevState;
+        prevState.findResult = arr;        
+        return prevState;        
       });
+      //console.log(this.state);      
+      this.getUsersTimes(this.state.attendees);      
     });
   }
+
+  private getUsersTimes(attendees) {
+    let _users = attendees.map(attendee => attendee.Email)
+    let request_time: any = {};
+    request_time.start = moment().startOf('day').add(8, 'hour').format('YYYY-MM-DD[T]HH:mm:ss[.000Z]')
+    request_time.end = moment().startOf('day').add(17, 'hour').format('YYYY-MM-DD[T]HH:mm:ss[.000Z]')
+    this.eventsApi.FindUserTimes(this.props.token, _users, request_time).then(res=>{      
+      this.setState((prevState: IFindMeetingTimesState): IFindMeetingTimesState => {
+        prevState.timeline = res.value;
+        return prevState;
+      })          
+    })
+  };
+
   private getRoomsData() {
     let start = this.getDate('start');
     let end = this.getDate('end');
