@@ -20,6 +20,7 @@ export interface IFindMeetingTimesState{
     showAllResults:boolean;
     submitType:SubmitType;
     subject:string;
+    timeline:any[];
 }
 export enum SubmitType{
     Find,
